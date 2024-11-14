@@ -13,3 +13,6 @@ app.use(express.json());
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
+
+const userRoutes = require('./routes/userRoutes'); // 引入登录路由
+app.use('/api/user', userRoutes); // 使用登录路由
