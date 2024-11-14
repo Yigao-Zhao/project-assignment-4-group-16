@@ -17,6 +17,16 @@ const AuthController = {
             res.status(401).json({ message: err.message });
         }
     },
+	
+	getAllUsers: async (req, res) => {
+	        try {
+	            const users = await UserService.getAllUsers();
+				console.log(users)
+	            res.json(users);
+	        } catch (err) {
+	            res.status(500).json({message: err.message});
+	        }
+	    },
 };
 
 module.exports = AuthController;

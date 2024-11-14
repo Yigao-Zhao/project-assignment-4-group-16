@@ -22,6 +22,15 @@ const UserService = {
 
         return { token, user };
     },
+	getAllUsers: async () => {
+	        try {
+	            const users = await User.getAllUsers(); 
+	            return users; 
+	        } catch (err) {
+	            console.error('Error in UserService.getAllUsers:', err.message);
+	            throw new Error('Failed to retrieve users'); 
+	        }
+	    },
 };
 
 module.exports = UserService;
