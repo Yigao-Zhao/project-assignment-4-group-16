@@ -44,6 +44,18 @@ CREATE TABLE order_item (
     OrderProductSoldPrice FLOAT
 );
 
+CREATE TABLE Cart (
+    CartID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT NOT NULL
+);
+
+CREATE TABLE Cart_Item (
+    CartItemID INT AUTO_INCREMENT PRIMARY KEY, 
+    CartID INT NOT NULL,                 
+    CartProductID INT NOT NULL,                
+    Quantity INT NOT NULL DEFAULT 1,      
+    
+);
 
 
 -- Insert sample data into user table
