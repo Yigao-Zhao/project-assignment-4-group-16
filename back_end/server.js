@@ -1,7 +1,7 @@
 require('dotenv').config(); // Load environment variables
 const express = require('express');
 const db = require('./config/mysql'); // MySQL configuration
-const redis = require('./config/redis'); // Redis configuration
+//const redis = require('./config/redis'); // Redis configuration
 const cors = require('cors');
 const app = express();
 const port = 5001;
