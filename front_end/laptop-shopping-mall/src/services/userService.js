@@ -1,19 +1,19 @@
-const API_BASE_URL = 'http://localhost:5001/api/user';
+const API_BASE_URL = 'http://localhost:5005/api/user';
 
-export const fetchUsers = async () => {
+export const fetchUsers =async()=>{
     const token = localStorage.getItem('token'); 
     if (!token) {
         throw new Error('No token found. Please log in.');
     }
 
     const response = await fetch(`${API_BASE_URL}/users`, {
-        method: 'GET',
+        method:'GET',
         headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization:`Bearer ${token}`,
         },
     });
 
-    if (!response.ok) {
+    if (!response.ok){
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to fetch users.');
     }

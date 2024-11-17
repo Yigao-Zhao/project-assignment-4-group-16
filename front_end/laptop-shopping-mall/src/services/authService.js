@@ -1,9 +1,9 @@
-const API_BASE_URL = 'http://localhost:5001/api/user';
+const API_BASE_URL = 'http://localhost:5005/api/user';
 
 export const login = async (email, password) => {
     const response = await fetch(`${API_BASE_URL}/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ email, password }),
     });
 

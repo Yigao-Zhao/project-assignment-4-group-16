@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+
 function App() {
     const [data, setData] = useState('');
 
     useEffect(() => {
-        axios.get('http://localhost:5001/api/data') 
+        axios.get('http://localhost:5005/api/data') 
             .then(response => {
                 setData(response.data.message);
             })

@@ -1,62 +1,60 @@
 import React, { useState } from 'react';
-import {
-    Container,
-    Box,
-    Typography,
-    Button,
-    List,
-    ListItem,
-    Alert,
-} from '@mui/material';
-import { fetchUsers } from '../../services/userService';
+import { Box, Drawer, List, ListItem, ListItemText, Typography ,Toolbar} from '@mui/material';
 
 const AdminDashboard = () => {
-    const [users, setUsers] = useState([]);
-    const [error, setError] = useState('');
+    const [selectedSection, setSelectedSection] = useState('User Management');
 
-    const handleFetchUsers = async () => {
-        setError('');
-        try {
-            const userList = await fetchUsers();
-            setUsers(userList);
-        } catch (err) {
-            setError(err.message);
-        }
-    };
+    const NAVIGATION = [
+        { id: 'user-management', label: 'User Management' },
+        { id: 'product-management', label: 'Product Management' },
+    ];
 
     return (
-        <Container maxWidth="md">
-            <Box
-                sx={{
-                    mt: 4,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                }}
-            >
-                <Typography component="h1" variant="h4" sx={{ mb: 3 }}>
-                    Admin Dashboard
+        <Box sx={{ display: 'flex', height: '100vh' }}>
+		<Drawer
+		    variant="permanent"
+		    sx={{
+		        width: 240,
+		        flexShrink: 0,
+		        [`& .MuiDrawer-paper`]: {
+		            width: 240,
+		            boxSizing: 'border-box',
+					zIndex: (theme) => theme.zIndex.appBar - 1
+		        },
+		    }}
+		>
+		<Toolbar/>
+		    <List>
+		        {NAVIGATION.map((item) => (
+		            <ListItem
+		                button="true" 
+		                key={item.id}
+		                onClick={() => setSelectedSection(item.label)}
+		                selected={selectedSection === item.label}
+		            >
+		                <ListItemText primary={item.label} />
+		            </ListItem>
+		        ))}
+		    </List>
+		</Drawer>
+			
+
+            <Box sx={{ flexGrow: 1, p: 3 }}>
+                <Typography variant="h4" gutterBottom>
+                    {selectedSection}
                 </Typography>
-                {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleFetchUsers}
-                    sx={{ mb: 3 }}
-                >
-                    Fetch Users
-                </Button>
-                {users.length > 0 && (
-                    <List>
-                        {users.map((user) => (
-                            <ListItem key={user.UserID}>
-                                {user.FirstName} {user.LastName} - {user.Email}
-                            </ListItem>
-                        ))}
-                    </List>
+                {selectedSection === 'User Management' && (
+                    <Typography>
+                        Manage users here. Add, edit, or delete user accounts.
+                    </Typography>
+                )}
+                {selectedSection === 'Product Management' && (
+                    <Typography>
+                        Manage products here. Add, edit, or delete product listings.
+                    </Typography>
                 )}
             </Box>
-        </Container>
+        </Box>
     );
 };
 
