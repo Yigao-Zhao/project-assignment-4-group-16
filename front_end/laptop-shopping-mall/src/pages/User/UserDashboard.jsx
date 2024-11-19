@@ -40,8 +40,24 @@ const UserDashboard = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const orderHistory = [
-    { id: "12345", date: "2024-11-01", product: "Laptop", progress: "Delivered" },
-    { id: "67890", date: "2024-11-05", product: "Headphones", progress: "Shipped" },
+    {
+      id: "12345",
+      date: "2024-11-01",
+      product: "Laptop",
+      progress: "Delivered",
+      subtotal: 900,
+      taxRate: 10,
+      total: 990,
+    },
+    {
+      id: "67890",
+      date: "2024-11-05",
+      product: "Headphones",
+      progress: "Shipped",
+      subtotal: 200,
+      taxRate: 8,
+      total: 216,
+    },
   ];
 
   const handleInputChange = (e) => {
@@ -210,15 +226,55 @@ const UserDashboard = () => {
 
       {/* Order Details Dialog */}
       {selectedOrder && (
-        <Dialog open={true} onClose={handleCloseDialog}>
-          <DialogTitle>Order Details</DialogTitle>
+        <Dialog open={true} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+          <DialogTitle sx={{ textAlign: "center", fontWeight: "bold" }}>
+            Order Details
+          </DialogTitle>
           <DialogContent>
-            <Typography variant="body1">
-              <strong>Product:</strong> {selectedOrder.product}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Progress:</strong> {selectedOrder.progress}
-            </Typography>
+            <Box sx={{ p: 2 }}>
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <Typography variant="body1">
+                    <strong>Order ID:</strong> {selectedOrder.id}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body1">
+                    <strong>User ID:</strong> {user.UserID}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body1">
+                    <strong>Subtotal:</strong> ${selectedOrder.subtotal}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body1">
+                    <strong>Tax Rate:</strong> {selectedOrder.taxRate}%
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body1">
+                    <strong>Total:</strong> ${selectedOrder.total}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body1">
+                    <strong>Order Status:</strong> {selectedOrder.progress}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body1">
+                    <strong>Payment Method:</strong> {user.PaymentMethod}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body1">
+                    <strong>Order Date:</strong> {selectedOrder.date}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Box>
           </DialogContent>
           <DialogActions>
             <Button
@@ -237,3 +293,4 @@ const UserDashboard = () => {
 };
 
 export default UserDashboard;
+

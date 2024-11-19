@@ -1,7 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { CartProvider } from "./context/CartContext"; // 引入 CartProvider
+import ProductDashboard from "./pages/ProductDashboard";
+import ProductDetail from "./pages/ProductDetail";
 
-
+const App = () => {
+    return (
+      <CartProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<ProductDashboard />} />
+            <Route path="/ProductDetail" element={<ProductDetail />} />
+          </Routes>
+        </Router>
+      </CartProvider>
+    );
+  };
+  
 function App() {
     const [data, setData] = useState('');
 
