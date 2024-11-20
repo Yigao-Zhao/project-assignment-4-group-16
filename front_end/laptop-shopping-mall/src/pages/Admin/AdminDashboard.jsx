@@ -85,13 +85,13 @@ const UserManagement = () => {
 				<TableHead>
 					<TableRow>
 						<TableCell>ID</TableCell>
-						<TableCell>First Name</TableCell>
-						<TableCell>Middle Name</TableCell>
-						<TableCell>Last Name</TableCell>
-						<TableCell>Address</TableCell>
+						<TableCell>First Name <span style={{ color: 'red' }}>*</span></TableCell>
+						<TableCell>Middle Name </TableCell>
+						<TableCell>Last Name <span style={{ color: 'red' }}>*</span></TableCell>
+						<TableCell>Address <span style={{ color: 'red' }}>*</span></TableCell>
 						<TableCell>Email</TableCell>
-						<TableCell>Payment Method</TableCell>
-						<TableCell>Is Admin</TableCell>
+						<TableCell>Payment Method <span style={{ color: 'red' }}>*</span></TableCell>
+						<TableCell>Is Admin <span style={{ color: 'red' }}>*</span></TableCell>
 						<TableCell>Actions</TableCell>
 					</TableRow>
 				</TableHead>
@@ -253,12 +253,21 @@ const ProductManagement = () => {
 			return "Product type is required.";
 		}
 
+		if (product.ProductPrice === "") {
+			return "Product price is required.";
+		}
+
 		const price = Number(product.ProductPrice);
 		if (isNaN(price) || price <= 0)  {
 			return "Product price must be a number greater than zero.";
 		}
 
+		if (product.ProductStock === "") {
+			return "Product stock is required.";
+		}
+	
 		const stock = Number(product.ProductStock);
+	
 		if (isNaN(stock) || stock < 0) {
 			return "Product stock must be a number greater than or equal to zero.";
 		}
@@ -323,12 +332,12 @@ const ProductManagement = () => {
 				<TableHead>
 					<TableRow>
 						<TableCell>ID</TableCell>
-						<TableCell>Name</TableCell>
-						<TableCell>Type</TableCell>
+						<TableCell>Name <span style={{ color: 'red' }}>*</span></TableCell>
+						<TableCell>Type <span style={{ color: 'red' }}>*</span></TableCell>
 						<TableCell>Specifications</TableCell>
 						<TableCell>Image</TableCell>
-						<TableCell>Price($)</TableCell>
-						<TableCell>Stock</TableCell>
+						<TableCell>Price($) <span style={{ color: 'red' }}>*</span></TableCell>
+						<TableCell>Stock <span style={{ color: 'red' }}>*</span></TableCell>
 						<TableCell>Actions</TableCell>
 					</TableRow>
 				</TableHead>
