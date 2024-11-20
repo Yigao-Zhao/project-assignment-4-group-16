@@ -26,6 +26,7 @@ import {
 import { Edit, Save } from "@mui/icons-material";
 
 const paymentMethods = ['Credit Card', 'PayPal', 'Bank Transfer'];
+const isadmins = ['Y', 'N'];
 
 const AdminDashboard = () => {
 	const [selectedSection, setSelectedSection] = useState("User Management");
@@ -43,9 +44,9 @@ const AdminDashboard = () => {
 	];
 
 	const mockProducts = [
-		{ id: 1, name: "Product A", type: "lenovo", specifications: "desktop", image: "", price: "2999", stock: "10" },
-		{ id: 2, name: "Product B", type: "apple", specifications: "laptop", image: "", price: "1999", stock: "20" },
-		{ id: 3, name: "Product C", type: "Dell", specifications: "mouse", image: "", price: "39", stock: "199" },
+		{ id: 1, name: "Product A", type: "Desktop", specifications: "lenovo xxx", image: "", price: "2999", stock: "10" },
+		{ id: 2, name: "Product B", type: "Laptop", specifications: "dell xxx", image: "", price: "1999", stock: "20" },
+		{ id: 3, name: "Product C", type: "Accessories", specifications: "mouse xxx", image: "", price: "39", stock: "199" },
 	];
 
 	const [users, setUsers] = useState(mockUsers);
@@ -190,12 +191,23 @@ const AdminDashboard = () => {
 							</TableCell>
 							<TableCell>
 								{editUserId === user.id ? (
-									<TextField
-										value={user.isadmin}
+									<FormControl fullWidth>
+									<Select
+										value={editedUser?.isadmin || user.isadmin} // 临时保存选中的值
 										onChange={(e) =>
-											handleUserEdit(user.id, "isadmin", e.target.value)
+											setEditedUser((prev) => ({
+												...prev,
+												isadmin: e.target.value, // 更新临时状态
+											}))
 										}
-									/>
+									>
+										{isadmins.map((method, index) => (
+											<MenuItem key={index} value={method}>
+												{method}
+											</MenuItem>
+										))}
+									</Select>
+								</FormControl>
 								) : (
 									user.isadmin
 								)}
