@@ -26,6 +26,7 @@ import {
 	MenuItem,
 	InputLabel,
 	CircularProgress,
+	Alert
 } from "@mui/material";
 import { Edit, Save } from "@mui/icons-material";
 
@@ -37,18 +38,6 @@ const NAVIGATION = [
 	{ id: "user-management", label: "User Management" },
 	{ id: "product-management", label: "Product Management" },
 ];
-
-
-
-
-// 模拟数据
-
-//const mockProducts = [
-//	{ ProductID: 1, ProductName: "Product A", ProductType: "Desktop", ProductSpecifications: "lenovo xxx", ProductImage: "", ProductPrice: "2999", ProductStock: "10" },
-//	{ ProductID: 2, ProductName: "Product B", ProductType: "Laptop", ProductSpecifications: "dell xxx", ProductImage: "", ProductPrice: "1999", ProductStock: "20" },
-//	{ ProductID: 3, ProductName: "Product C", ProductType: "Accessories", ProductSpecifications: "mouse xxx", ProductImage: "", ProductPrice: "39", ProductStock: "199" },
-//];
-
 
 const UserManagement = () => {
 
@@ -247,16 +236,69 @@ const ProductManagement = () => {
 	const [error, setError] = useState('');
 	const [openSnackbar, setOpenSnackbar] = useState(false);  // Snackbar 显示状态
 	const [editProductId, setEditProductId] = useState(null);
+	const [snackbarMessage, setSnackbarMessage] = useState(''); // 显示的提示消息
+	const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 控制 Snackbar 类型（成功或错误
+
 	const handleProductEdit = (id, field, value) => {
 		setProducts((prev) =>
 			prev.map((product) => (product.ProductID === id ? { ...product, [field]: value } : product))
 		);
 	};
 
-	const handleProductSave = () => {
-		// 在这里可以执行保存操作，例如调用 API
-		setOpenSnackbar(true); // 保存成功后显示 Snackbar
-		setEditProductId(null); // 保存成功后退出编辑状态
+	const validateProduct = (product) => {
+		if (!product.ProductName) {
+			return "Product name is required.";
+		}
+		if (!product.ProductType) {
+			return "Product type is required.";
+		}
+
+		const price = Number(product.ProductPrice);
+		if (isNaN(price) || price <= 0)  {
+			return "Product price must be a number greater than zero.";
+		}
+
+		const stock = Number(product.ProductStock);
+		if (isNaN(stock) || stock < 0) {
+			return "Product stock must be a number greater than or equal to zero.";
+		}
+		return null; // 返回 null 表示没有错误
+	};
+
+	const handleProductSave = async () => {
+		const productToSave = products.find((p) => p.ProductID === editProductId);
+
+		// 验证产品数据
+		const validationError = validateProduct(productToSave);
+		if (validationError) {
+			console.log("Validation failed:", validationError);
+			setError(validationError);
+			setSnackbarMessage(validationError);  // 设置错误消息
+			setSnackbarSeverity('error');  // 设置错误类型
+			setOpenSnackbar(true); // 显示 Snackbar
+			return;
+		}
+
+		try {
+			// 调用后端 API 更新产品
+			const response = await axios.put(`http://localhost:5005/api/product/products/${editProductId}`, productToSave);
+
+			console.log(response.data.message); // 打印成功消息
+			setSnackbarMessage('Product saved successfully!');  // 设置成功消息
+			setSnackbarSeverity('success');  // 设置成功类型
+			setOpenSnackbar(true); // 显示提示
+			setEditProductId(null); // 退出编辑模式
+
+			// 重新获取产品列表
+			handleFetchProducts();
+		} catch (error) {
+			console.error('Error saving product:', error);
+			const errorMessage = error.response?.data?.message || 'Failed to save product';
+			console.error('Error saving product:', errorMessage);
+			setSnackbarMessage(errorMessage); // 设置错误消息
+			setSnackbarSeverity('error');  // 设置错误类型
+			setOpenSnackbar(true);  // 显示错误消息
+		}
 	};
 
 	const handleFetchProducts = async () => {
@@ -275,6 +317,7 @@ const ProductManagement = () => {
 
 
 	return (
+		<div>
 		<TableContainer component={Paper}>
 			<Table>
 				<TableHead>
@@ -381,12 +424,31 @@ const ProductManagement = () => {
 				</TableBody>
 			</Table>
 		</TableContainer>
+
+
+	<Snackbar
+		open={openSnackbar}
+		autoHideDuration={3000}
+		onClose={() => setOpenSnackbar(false)}
+	>
+		<Alert
+			onClose={() => setOpenSnackbar(false)}
+			severity={snackbarSeverity} // 根据错误或成功显示不同颜色
+			sx={{ width: '100%' }}
+		>
+			{snackbarMessage}  {/* 显示提示消息 */}
+		</Alert>
+	</Snackbar>
+	</div>
+
 	);
 }
 
 const AdminDashboard = () => {
 	const [selectedSection, setSelectedSection] = useState('User Management');
 	const [openSnackbar, setOpenSnackbar] = useState(false); // Handle Snackbar state
+	const [snackbarMessage, setSnackbarMessage] = useState(''); // 显示的提示消息
+	const [snackbarSeverity, setSnackbarSeverity] = useState(''); // 控制 Snackbar 类型（成功或错误）
 	return (
 		<Box sx={{ display: "flex", height: "100vh" }}>
 			{/* 侧边栏导航 */}
@@ -431,14 +493,8 @@ const AdminDashboard = () => {
 				{selectedSection === "Product Management" && <ProductManagement />}
 			</Box>
 
-			{/* Snackbar 提示 */}
-			<Snackbar
-				open={openSnackbar}
-				autoHideDuration={3000}
-				onClose={() => setOpenSnackbar(false)}
-				message="saved successfully"
-			/>
-		</Box>
+
+		</Box >
 	);
 };
 
