@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import { fetchUsers } from '../../services/userService';
+import { fetchProducts } from '../../services/productService';
 import {
 	Box,
 	Drawer,
@@ -42,23 +43,23 @@ const NAVIGATION = [
 
 // 模拟数据
 
-const mockProducts = [
-	{ ProductID: 1, ProductName: "Product A", ProductType: "Desktop", ProductSpecifications: "lenovo xxx", ProductImage: "", ProductPrice: "2999", ProductStock: "10" },
-	{ ProductID: 2, ProductName: "Product B", ProductType: "Laptop", ProductSpecifications: "dell xxx", ProductImage: "", ProductPrice: "1999", ProductStock: "20" },
-	{ ProductID: 3, ProductName: "Product C", ProductType: "Accessories", ProductSpecifications: "mouse xxx", ProductImage: "", ProductPrice: "39", ProductStock: "199" },
-];
+//const mockProducts = [
+//	{ ProductID: 1, ProductName: "Product A", ProductType: "Desktop", ProductSpecifications: "lenovo xxx", ProductImage: "", ProductPrice: "2999", ProductStock: "10" },
+//	{ ProductID: 2, ProductName: "Product B", ProductType: "Laptop", ProductSpecifications: "dell xxx", ProductImage: "", ProductPrice: "1999", ProductStock: "20" },
+//	{ ProductID: 3, ProductName: "Product C", ProductType: "Accessories", ProductSpecifications: "mouse xxx", ProductImage: "", ProductPrice: "39", ProductStock: "199" },
+//];
 
 
 const UserManagement = () => {
 
-	
+
 	const [users, setUsers] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [openSnackbar, setOpenSnackbar] = useState(false);  // Snackbar 显示状态
 	// 编辑状态控制
 	const [editUserId, setEditUserId] = useState(null);
-	
+
 	const [editedUser, setEditedUser] = useState(null); // 保存正在编辑的用户数据
 
 	// 用户编辑保存
@@ -76,18 +77,18 @@ const UserManagement = () => {
 	};
 
 	const handleFetchUsers = async () => {
-        setError('');
-        try {
-            const userList = await fetchUsers();
-            setUsers(userList);
-        } catch (err) {
-            setError(err.message);
-        }
-    };
+		setError('');
+		try {
+			const userList = await fetchUsers();
+			setUsers(userList);
+		} catch (err) {
+			setError(err.message);
+		}
+	};
 
 	useEffect(() => {
-        handleFetchUsers();
-    }, []);
+		handleFetchUsers();
+	}, []);
 
 	return (
 		<TableContainer component={Paper}>
@@ -242,7 +243,8 @@ const UserManagement = () => {
 
 const ProductManagement = () => {
 
-	const [products, setProducts] = useState(mockProducts);
+	const [products, setProducts] = useState([]);
+	const [error, setError] = useState('');
 	const [openSnackbar, setOpenSnackbar] = useState(false);  // Snackbar 显示状态
 	const [editProductId, setEditProductId] = useState(null);
 	const handleProductEdit = (id, field, value) => {
@@ -257,104 +259,128 @@ const ProductManagement = () => {
 		setEditProductId(null); // 保存成功后退出编辑状态
 	};
 
+	const handleFetchProducts = async () => {
+		setError('');
+		try {
+			const productList = await fetchProducts();
+			setProducts(productList);
+		} catch (err) {
+			setError(err.message);
+		}
+	};
+
+	useEffect(() => {
+		handleFetchProducts();
+	}, []);
+
+
 	return (
-	<TableContainer component={Paper}>
-		<Table>
-			<TableHead>
-				<TableRow>
-					<TableCell>ID</TableCell>
-					<TableCell>Name</TableCell>
-					<TableCell>Type</TableCell>
-					<TableCell>Specifications</TableCell>
-					<TableCell>Image</TableCell>
-					<TableCell>Price($)</TableCell>
-					<TableCell>Stock</TableCell>
-					<TableCell>Actions</TableCell>
-				</TableRow>
-			</TableHead>
-			<TableBody>
-				{products.map((product) => (
-					<TableRow key={product.ProductID}>
-						<TableCell>{product.ProductID}</TableCell>
-						<TableCell>
-							{editProductId === product.ProductID ? (
-								<TextField
-									value={product.ProductName}
-									onChange={(e) =>
-										handleProductEdit(product.ProductID, "ProductName", e.target.value)
-									}
-								/>
-							) : (
-								product.ProductName
-							)}
-						</TableCell>
-						<TableCell>
-							{editProductId === product.ProductID ? (
-								<TextField
-									value={product.ProductType}
-									onChange={(e) =>
-										handleProductEdit(product.ProductID, "ProductType", e.target.value)
-									}
-								/>
-							) : (
-								product.ProductType
-							)}
-						</TableCell>
-						<TableCell>
-							{editProductId === product.ProductID ? (
-								<TextField
-									value={product.ProductSpecifications}
-									onChange={(e) =>
-										handleProductEdit(product.ProductID, "ProductSpecifications", e.target.value)
-									}
-								/>
-							) : (
-								product.ProductSpecifications
-							)}
-						</TableCell>
-						<TableCell>
-							{product.image || "N/A"}
-						</TableCell>
-						<TableCell>
-							{editProductId === product.ProductID ? (
-								<TextField
-									value={product.ProductPrice}
-									onChange={(e) =>
-										handleProductEdit(product.ProductID, "ProductPrice", e.target.value)
-									}
-								/>
-							) : (
-								product.ProductPrice
-							)}
-						</TableCell>
-						<TableCell>
-							{editProductId === product.ProductID ? (
-								<TextField
-									value={product.ProductStock}
-									onChange={(e) =>
-										handleProductEdit(product.ProductID, "ProductStock", e.target.value)
-									}
-								/>
-							) : (
-								product.ProductStock
-							)}
-						</TableCell>
-						<TableCell>
-							{editProductId === product.ProductID ? (
-								<IconButton onClick={handleProductSave}>
-									<Save />
-								</IconButton>
-							) : (
-								<IconButton onClick={() => setEditProductId(product.ProductID)}>
-									<Edit />
-								</IconButton>
-							)}
-						</TableCell>
+		<TableContainer component={Paper}>
+			<Table>
+				<TableHead>
+					<TableRow>
+						<TableCell>ID</TableCell>
+						<TableCell>Name</TableCell>
+						<TableCell>Type</TableCell>
+						<TableCell>Specifications</TableCell>
+						<TableCell>Image</TableCell>
+						<TableCell>Price($)</TableCell>
+						<TableCell>Stock</TableCell>
+						<TableCell>Actions</TableCell>
 					</TableRow>
-				))}
-			</TableBody>
-		</Table>
-	</TableContainer>
+				</TableHead>
+				<TableBody>
+					{products.map((product) => (
+						<TableRow key={product.ProductID}>
+							<TableCell>{product.ProductID}</TableCell>
+							<TableCell>
+								{editProductId === product.ProductID ? (
+									<TextField
+										value={product.ProductName}
+										onChange={(e) =>
+											handleProductEdit(product.ProductID, "ProductName", e.target.value)
+										}
+									/>
+								) : (
+									product.ProductName
+								)}
+							</TableCell>
+							<TableCell>
+								{editProductId === product.ProductID ? (
+									<TextField
+										value={product.ProductType}
+										onChange={(e) =>
+											handleProductEdit(product.ProductID, "ProductType", e.target.value)
+										}
+									/>
+								) : (
+									product.ProductType
+								)}
+							</TableCell>
+							<TableCell>
+								{editProductId === product.ProductID ? (
+									<TextField
+										value={product.ProductSpecifications}
+										onChange={(e) =>
+											handleProductEdit(product.ProductID, "ProductSpecifications", e.target.value)
+										}
+									/>
+								) : (
+									product.ProductSpecifications
+								)}
+							</TableCell>
+							<TableCell>
+								{editProductId === product.ProductID ? (
+									<TextField
+										value={product.ProductImage}
+										onChange={(e) =>
+											handleProductEdit(product.ProductID, "ProductImage", e.target.value)
+										}
+									/>
+								) : (
+									product.ProductImage
+								)}
+							</TableCell>
+							<TableCell>
+								{editProductId === product.ProductID ? (
+									<TextField
+										value={product.ProductPrice}
+										onChange={(e) =>
+											handleProductEdit(product.ProductID, "ProductPrice", e.target.value)
+										}
+									/>
+								) : (
+									product.ProductPrice
+								)}
+							</TableCell>
+							<TableCell>
+								{editProductId === product.ProductID ? (
+									<TextField
+										value={product.ProductStock}
+										onChange={(e) =>
+											handleProductEdit(product.ProductID, "ProductStock", e.target.value)
+										}
+									/>
+								) : (
+									product.ProductStock
+								)}
+							</TableCell>
+							<TableCell>
+								{editProductId === product.ProductID ? (
+									<IconButton onClick={handleProductSave}>
+										<Save />
+									</IconButton>
+								) : (
+									<IconButton onClick={() => setEditProductId(product.ProductID)}>
+										<Edit />
+									</IconButton>
+								)}
+							</TableCell>
+						</TableRow>
+					))}
+				</TableBody>
+			</Table>
+		</TableContainer>
 	);
 }
 
@@ -401,8 +427,8 @@ const AdminDashboard = () => {
 				<Typography variant="h4" gutterBottom>
 					{selectedSection}
 				</Typography>
-				{selectedSection === "User Management" && <UserManagement/>}
-				{selectedSection === "Product Management" && <ProductManagement/>}
+				{selectedSection === "User Management" && <UserManagement />}
+				{selectedSection === "Product Management" && <ProductManagement />}
 			</Box>
 
 			{/* Snackbar 提示 */}
