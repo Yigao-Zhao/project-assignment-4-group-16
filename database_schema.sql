@@ -53,13 +53,13 @@ CREATE TABLE Cart_Item (
     CartItemID INT AUTO_INCREMENT PRIMARY KEY, 
     CartID INT NOT NULL,                 
     CartProductID INT NOT NULL,                
-    Quantity INT NOT NULL DEFAULT 1,      
+    Quantity INT NOT NULL DEFAULT 1     
     
 );
 
 
 -- Insert sample data into user table
-INSERT INTO user (FirstName, MiddleName, LastName, Address, Email, Password, PaymentMethod, IsAdmin)
+INSERT INTO user (FirstName, MiddleName, LastName, Address, Email, MyPassword, PaymentMethod, IsAdmin)
 VALUES
 ('John', 'A', 'Doe', '123 Main St', 'john.doe@example.com', 'password123', 'Credit Card', 'Y'),
 ('Jane', NULL, 'Smith', '456 Maple Ave', 'jane.smith@example.com', 'securepassword', 'PayPal', 'N'),

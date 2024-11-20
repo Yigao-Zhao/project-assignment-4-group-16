@@ -4,7 +4,7 @@ const db = require('./config/mysql'); // MySQL configuration
 //const redis = require('./config/redis'); // Redis configuration
 const cors = require('cors');
 const app = express();
-const port = 5001;
+const port = 5005;
 
 // Middleware for parsing JSON
 app.use(express.json());
