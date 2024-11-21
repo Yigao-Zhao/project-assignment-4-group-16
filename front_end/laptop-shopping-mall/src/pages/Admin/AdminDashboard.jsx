@@ -51,7 +51,8 @@ const UserManagement = () => {
 	const [openSnackbar, setOpenSnackbar] = useState(false);  // Snackbar 显示状态
 	const [snackbarMessage, setSnackbarMessage] = useState(''); // 显示的提示消息
 	const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 控制 Snackbar 类型（成功或错误
-
+	const [openConfirmDialog, setOpenConfirmDialog] = useState(false); // 控制确认删除对话框
+	const [userToDelete, setUserToDelete] = useState(null); // 存储待删除的userID
 
 
 	// 编辑状态控制
@@ -138,6 +139,35 @@ const UserManagement = () => {
 			setSnackbarSeverity('error');  // 设置错误类型
 			setOpenSnackbar(true);  // 显示错误消息
 		}
+	};
+
+
+	const handleDeleteUser = async (id) => {
+		try {
+			const response = await axios.delete(`http://localhost:5005/api/user/users/${userToDelete}`);
+			if (response.data.success) {
+				setUsers((prev) => prev.filter((user) => user.UserID !== userToDelete));
+				setOpenConfirmDialog(false); // 关闭确认对话框
+				setSnackbarMessage('User deleted successfully!');
+				setSnackbarSeverity('success');
+				setOpenSnackbar(true);
+
+				// 更新本地状态
+				setUsers((prev) => prev.filter((user) => user.UserID !== id));
+			} else {
+				throw new Error(response.data.message || 'Failed to delete user');
+			}
+		} catch (err) {
+			console.error('Error deleting user:', err);
+			setSnackbarMessage('Failed to delete user');
+			setSnackbarSeverity('error');
+			setOpenSnackbar(true);
+		}
+	};
+
+	const handleConfirmDelete = (userId) => {
+		setUserToDelete(userId); // 设置待删除的userID
+		setOpenConfirmDialog(true); // 打开删除确认对话框
 	};
 
 	const handleFetchUsers = async () => {
@@ -277,14 +307,38 @@ const UserManagement = () => {
 											<Save />
 										</IconButton>
 									) : (
-										// 如果没有编辑当前用户，显示编辑按钮
-										<IconButton onClick={() => {
-											handleEditClick(user);
-										}}>
-											<Edit />
-										</IconButton>
+										<Box display="flex" alignItems="center">
+											<IconButton onClick={() => {
+												handleEditClick(user);
+											}}>
+												<Edit />
+											</IconButton>
+											<IconButton onClick={() => handleConfirmDelete(user.UserID)}>
+												<Delete />
+											</IconButton>
+										</Box>
 									)}
 								</TableCell>
+
+								{/* 删除确认对话框 */}
+								<Dialog open={openConfirmDialog} onClose={() => setOpenConfirmDialog(false)}>
+										<DialogTitle>Confirm Deletion</DialogTitle>
+										<DialogContent>
+											Are you sure you want to delete this user?
+										</DialogContent>
+										<DialogActions>
+											<Button onClick={() => setOpenConfirmDialog(false)} color="primary">
+												Cancel
+											</Button>
+											<Button
+												onClick={handleDeleteUser}
+												color="secondary"
+												variant="contained"
+											>
+												Delete
+											</Button>
+										</DialogActions>
+									</Dialog>
 							</TableRow>
 						))}
 					</TableBody>
