@@ -26,9 +26,13 @@ import {
 	MenuItem,
 	InputLabel,
 	CircularProgress,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogTitle,
 	Alert
 } from "@mui/material";
-import { Edit, Save } from "@mui/icons-material";
+import { Edit, Save, Add, Delete } from "@mui/icons-material";
 
 const paymentMethods = ['Credit Card', 'PayPal', 'Bank Transfer'];
 
@@ -96,7 +100,7 @@ const UserManagement = () => {
 
 
 	const handleUserSave = async () => {
-	
+
 		if (!tempEditedUser) return;
 
 		const validationError = validateUser(tempEditedUser);
@@ -112,21 +116,21 @@ const UserManagement = () => {
 		try {
 			// 调用后端 API 更新产品
 			const response = await axios.put(`http://localhost:5005/api/user/users/${editUserId}`, tempEditedUser);
-				console.log(response.data.message); // 打印成功消息
-				setSnackbarMessage('User saved successfully!');  // 设置成功消息
-				setSnackbarSeverity('success');  // 设置成功类型
-				setOpenSnackbar(true); // 显示提示
+			console.log(response.data.message); // 打印成功消息
+			setSnackbarMessage('User saved successfully!');  // 设置成功消息
+			setSnackbarSeverity('success');  // 设置成功类型
+			setOpenSnackbar(true); // 显示提示
 
-				setUsers((prev) =>
-					prev.map((user) =>
-						user.UserID === tempEditedUser.UserID
-							? { ...user, ...tempEditedUser } // 合并未编辑的字段
-							: user
-					)
-				);
+			setUsers((prev) =>
+				prev.map((user) =>
+					user.UserID === tempEditedUser.UserID
+						? { ...user, ...tempEditedUser } // 合并未编辑的字段
+						: user
+				)
+			);
 
-				setEditUserId(null); // 退出编辑模式
-				setTempEditedUser(null); // 清空临时状态
+			setEditUserId(null); // 退出编辑模式
+			setTempEditedUser(null); // 清空临时状态
 
 		} catch (error) {
 			console.error('Error saving user:', error);
@@ -152,142 +156,142 @@ const UserManagement = () => {
 
 	return (
 		<div>
-		<TableContainer component={Paper}>
-			<Table>
-				<TableHead>
-					<TableRow>
-						<TableCell>ID</TableCell>
-						<TableCell>First Name <span style={{ color: 'red' }}>*</span></TableCell>
-						<TableCell>Middle Name </TableCell>
-						<TableCell>Last Name <span style={{ color: 'red' }}>*</span></TableCell>
-						<TableCell>Address <span style={{ color: 'red' }}>*</span></TableCell>
-						<TableCell>Email <span style={{ color: 'red' }}>*</span></TableCell>
-						<TableCell>Payment Method <span style={{ color: 'red' }}>*</span></TableCell>
-						<TableCell>Is Admin <span style={{ color: 'red' }}>*</span></TableCell>
-						<TableCell>Actions</TableCell>
-					</TableRow>
-				</TableHead>
-				<TableBody>
-					{users.map((user) => (
-						<TableRow key={user.UserID}>
-							<TableCell>{user.UserID}</TableCell>
-							<TableCell>
-								{editUserId === user.UserID ? (
-									<TextField
-										value={tempEditedUser?.FirstName || ''} // 临时保存的值
-										onChange={(e) =>
-											handleTempUserEdit('FirstName', e.target.value)
-										}
-									/>
-								) : (
-									user.FirstName
-								)}
-							</TableCell>
-							<TableCell>
-								{editUserId === user.UserID ? (
-									<TextField
-										value={tempEditedUser?.MiddleName || ''}
-										onChange={(e) =>
-											handleTempUserEdit('MiddleName', e.target.value)
-										}
-									/>
-								) : (
-									user.MiddleName
-								)}
-							</TableCell>
-							<TableCell>
-								{editUserId === user.UserID ? (
-									<TextField
-										value={tempEditedUser?.LastName || ''}
-										onChange={(e) =>
-											handleTempUserEdit('LastName', e.target.value)
-										}
-									/>
-								) : (
-									user.LastName
-								)}
-							</TableCell>
-							<TableCell>
-								{editUserId === user.UserID ? (
-									<TextField
-										value={tempEditedUser?.Address || ''}
-										onChange={(e) =>
-											handleTempUserEdit('Address', e.target.value)
-										}
-									/>
-								) : (
-									user.Address
-								)}
-							</TableCell>
-							<TableCell>
-								{editUserId === user.UserID ? (
-									<TextField
-										value={tempEditedUser?.Email || ''}
-										onChange={(e) =>
-											handleTempUserEdit('Email', e.target.value)
-										}
-									/>
-								) : (
-									user.Email
-								)}
-							</TableCell>
-							<TableCell>
-								{editUserId === user.UserID ? (
-									<FormControl fullWidth>
-										<Select
-											value={tempEditedUser?.PaymentMethod || ''} // 临时保存选中的值
-											onChange={(e) => handleTempUserEdit('PaymentMethod', e.target.value)}// 更新临时状态
-										>
-											{paymentMethods.map((method, index) => (
-												<MenuItem key={index} value={method}>
-													{method}
-												</MenuItem>
-											))}
-										</Select>
-									</FormControl>
-								) : (
-									user.PaymentMethod // 显示最终保存的支付方式
-								)}
-							</TableCell>
-							<TableCell>
-								{editUserId === user.UserID ? (
-									<FormControl fullWidth>
-										<Select
-											value={tempEditedUser?.IsAdmin || ''} // 临时保存选中的值
-											onChange={(e) => handleTempUserEdit('IsAdmin', e.target.value)}// 更新临时状态
-										>
-											{isadmins.map((method, index) => (
-												<MenuItem key={index} value={method}>
-													{method}
-												</MenuItem>
-											))}
-										</Select>
-									</FormControl>
-								) : (
-									user.IsAdmin
-								)}
-							</TableCell>
-							<TableCell>
-								{editUserId === user.UserID ? (
-									<IconButton onClick={handleUserSave}>
-										<Save />
-									</IconButton>
-								) : (
-									// 如果没有编辑当前用户，显示编辑按钮
-									<IconButton onClick={() => {
-										handleEditClick(user);
-									}}>
-										<Edit />
-									</IconButton>
-								)}
-							</TableCell>
+			<TableContainer component={Paper}>
+				<Table>
+					<TableHead>
+						<TableRow>
+							<TableCell>ID</TableCell>
+							<TableCell>First Name <span style={{ color: 'red' }}>*</span></TableCell>
+							<TableCell>Middle Name </TableCell>
+							<TableCell>Last Name <span style={{ color: 'red' }}>*</span></TableCell>
+							<TableCell>Address <span style={{ color: 'red' }}>*</span></TableCell>
+							<TableCell>Email <span style={{ color: 'red' }}>*</span></TableCell>
+							<TableCell>Payment Method <span style={{ color: 'red' }}>*</span></TableCell>
+							<TableCell>Is Admin <span style={{ color: 'red' }}>*</span></TableCell>
+							<TableCell>Actions</TableCell>
 						</TableRow>
-					))}
-				</TableBody>
-			</Table>
-		</TableContainer>
+					</TableHead>
+					<TableBody>
+						{users.map((user) => (
+							<TableRow key={user.UserID}>
+								<TableCell>{user.UserID}</TableCell>
+								<TableCell>
+									{editUserId === user.UserID ? (
+										<TextField
+											value={tempEditedUser?.FirstName || ''} // 临时保存的值
+											onChange={(e) =>
+												handleTempUserEdit('FirstName', e.target.value)
+											}
+										/>
+									) : (
+										user.FirstName
+									)}
+								</TableCell>
+								<TableCell>
+									{editUserId === user.UserID ? (
+										<TextField
+											value={tempEditedUser?.MiddleName || ''}
+											onChange={(e) =>
+												handleTempUserEdit('MiddleName', e.target.value)
+											}
+										/>
+									) : (
+										user.MiddleName
+									)}
+								</TableCell>
+								<TableCell>
+									{editUserId === user.UserID ? (
+										<TextField
+											value={tempEditedUser?.LastName || ''}
+											onChange={(e) =>
+												handleTempUserEdit('LastName', e.target.value)
+											}
+										/>
+									) : (
+										user.LastName
+									)}
+								</TableCell>
+								<TableCell>
+									{editUserId === user.UserID ? (
+										<TextField
+											value={tempEditedUser?.Address || ''}
+											onChange={(e) =>
+												handleTempUserEdit('Address', e.target.value)
+											}
+										/>
+									) : (
+										user.Address
+									)}
+								</TableCell>
+								<TableCell>
+									{editUserId === user.UserID ? (
+										<TextField
+											value={tempEditedUser?.Email || ''}
+											onChange={(e) =>
+												handleTempUserEdit('Email', e.target.value)
+											}
+										/>
+									) : (
+										user.Email
+									)}
+								</TableCell>
+								<TableCell>
+									{editUserId === user.UserID ? (
+										<FormControl fullWidth>
+											<Select
+												value={tempEditedUser?.PaymentMethod || ''} // 临时保存选中的值
+												onChange={(e) => handleTempUserEdit('PaymentMethod', e.target.value)}// 更新临时状态
+											>
+												{paymentMethods.map((method, index) => (
+													<MenuItem key={index} value={method}>
+														{method}
+													</MenuItem>
+												))}
+											</Select>
+										</FormControl>
+									) : (
+										user.PaymentMethod // 显示最终保存的支付方式
+									)}
+								</TableCell>
+								<TableCell>
+									{editUserId === user.UserID ? (
+										<FormControl fullWidth>
+											<Select
+												value={tempEditedUser?.IsAdmin || ''} // 临时保存选中的值
+												onChange={(e) => handleTempUserEdit('IsAdmin', e.target.value)}// 更新临时状态
+											>
+												{isadmins.map((method, index) => (
+													<MenuItem key={index} value={method}>
+														{method}
+													</MenuItem>
+												))}
+											</Select>
+										</FormControl>
+									) : (
+										user.IsAdmin
+									)}
+								</TableCell>
+								<TableCell>
+									{editUserId === user.UserID ? (
+										<IconButton onClick={handleUserSave}>
+											<Save />
+										</IconButton>
+									) : (
+										// 如果没有编辑当前用户，显示编辑按钮
+										<IconButton onClick={() => {
+											handleEditClick(user);
+										}}>
+											<Edit />
+										</IconButton>
+									)}
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			</TableContainer>
 
-		<Snackbar
+			<Snackbar
 				open={openSnackbar}
 				autoHideDuration={3000}
 				onClose={() => setOpenSnackbar(false)}
@@ -301,7 +305,7 @@ const UserManagement = () => {
 				</Alert>
 			</Snackbar>
 		</div>
-		
+
 	);
 }
 
@@ -314,7 +318,9 @@ const ProductManagement = () => {
 	const [openSnackbar, setOpenSnackbar] = useState(false);  // Snackbar 显示状态
 	const [editProductId, setEditProductId] = useState(null);
 	const [snackbarMessage, setSnackbarMessage] = useState(''); // 显示的提示消息
-	const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 控制 Snackbar 类型（成功或错误
+	const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 控制 Snackbar 类型（成功或错误）
+	const [openConfirmDialog, setOpenConfirmDialog] = useState(false); // 控制确认删除对话框
+	const [productToDelete, setProductToDelete] = useState(null); // 存储待删除的产品ID
 
 	const handleProductEdit = (id, field, value) => {
 		setProducts((prev) =>
@@ -385,6 +391,35 @@ const ProductManagement = () => {
 			setSnackbarSeverity('error');  // 设置错误类型
 			setOpenSnackbar(true);  // 显示错误消息
 		}
+	};
+
+
+	const handleDeleteProduct = async (id) => {
+		try {
+			const response = await axios.delete(`http://localhost:5005/api/product/products/${productToDelete}`);
+			if (response.data.success) {
+				setProducts((prev) => prev.filter((product) => product.ProductID !== productToDelete));
+				setOpenConfirmDialog(false); // 关闭确认对话框
+				setSnackbarMessage('Product deleted successfully!');
+				setSnackbarSeverity('success');
+				setOpenSnackbar(true);
+
+				// 更新本地状态
+				setProducts((prev) => prev.filter((product) => product.ProductID !== id));
+			} else {
+				throw new Error(response.data.message || 'Failed to delete product');
+			}
+		} catch (err) {
+			console.error('Error deleting product:', err);
+			setSnackbarMessage('Failed to delete product');
+			setSnackbarSeverity('error');
+			setOpenSnackbar(true);
+		}
+	};
+
+	const handleConfirmDelete = (productId) => {
+		setProductToDelete(productId); // 设置待删除的产品ID
+		setOpenConfirmDialog(true); // 打开删除确认对话框
 	};
 
 	const handleFetchProducts = async () => {
@@ -496,14 +531,42 @@ const ProductManagement = () => {
 								</TableCell>
 								<TableCell>
 									{editProductId === product.ProductID ? (
+
 										<IconButton onClick={handleProductSave}>
 											<Save />
 										</IconButton>
+
 									) : (
-										<IconButton onClick={() => setEditProductId(product.ProductID)}>
-											<Edit />
-										</IconButton>
+										<Box display="flex" alignItems="center">
+											<IconButton onClick={() => setEditProductId(product.ProductID)}>
+												<Edit />
+											</IconButton>
+											<IconButton onClick={() => handleConfirmDelete(product.ProductID)}>
+												<Delete />
+											</IconButton>
+										</Box>
 									)}
+
+									{/* 删除确认对话框 */}
+									<Dialog open={openConfirmDialog} onClose={() => setOpenConfirmDialog(false)}>
+										<DialogTitle>Confirm Deletion</DialogTitle>
+										<DialogContent>
+											Are you sure you want to delete this product?
+										</DialogContent>
+										<DialogActions>
+											<Button onClick={() => setOpenConfirmDialog(false)} color="primary">
+												Cancel
+											</Button>
+											<Button
+												onClick={handleDeleteProduct}
+												color="secondary"
+												variant="contained"
+											>
+												Delete
+											</Button>
+										</DialogActions>
+									</Dialog>
+
 								</TableCell>
 							</TableRow>
 						))}
