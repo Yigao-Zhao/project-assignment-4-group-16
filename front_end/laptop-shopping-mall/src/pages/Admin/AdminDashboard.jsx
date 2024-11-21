@@ -43,26 +43,97 @@ const UserManagement = () => {
 
 
 	const [users, setUsers] = useState([]);
-	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [openSnackbar, setOpenSnackbar] = useState(false);  // Snackbar 显示状态
+	const [snackbarMessage, setSnackbarMessage] = useState(''); // 显示的提示消息
+	const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 控制 Snackbar 类型（成功或错误
+
+
+
 	// 编辑状态控制
 	const [editUserId, setEditUserId] = useState(null);
 
-	const [editedUser, setEditedUser] = useState(null); // 保存正在编辑的用户数据
+	const [tempEditedUser, setTempEditedUser] = useState(null);
 
-	// 用户编辑保存
-	const handleUserEdit = (id, field, value) => {
-		setUsers((prev) =>
-			prev.map((user) => (user.UserID === id ? { ...user, [field]: value } : user))
-		);
+	const handleEditClick = (user) => {
+		setEditUserId(user.UserID);
+		setTempEditedUser({ ...user }); // 将用户数据复制到临时状态
 	};
 
-	const handleUserSave = () => {
-		//在这里可以执行保存操作，例如调用 API
+	const handleTempUserEdit = (field, value) => {
+		setTempEditedUser((prev) => ({ ...prev, [field]: value }));
+	};
 
-		setOpenSnackbar(true); // 保存成功后显示 Snackbar
-		setEditUserId(null); // 保存成功后退出编辑状态
+	const validateUser = (user) => {
+		if (!user.FirstName) {
+			return "First name is required.";
+		}
+		if (!user.LastName) {
+			return "Last Name is required.";
+		}
+
+		if (!user.Address) {
+			return "Address is required.";
+		}
+
+		const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+		if (!user.Email) {
+			return "Email is required.";
+		} else if (!emailPattern.test(user.Email)) {
+			return "Invalid email format.";
+		}
+
+		if (!user.PaymentMethod) {
+			return "Payment method is required.";
+		}
+
+		if (!user.IsAdmin) {
+			return "IsAdmin is required.";
+		}
+
+		return null; // 返回 null 表示没有错误
+	};
+
+
+	const handleUserSave = async () => {
+	
+		if (!tempEditedUser) return;
+
+		const validationError = validateUser(tempEditedUser);
+		if (validationError) {
+			console.log("Validation failed:", validationError);
+			setError(validationError);
+			setSnackbarMessage(validationError);  // 设置错误消息
+			setSnackbarSeverity('error');  // 设置错误类型
+			setOpenSnackbar(true); // 显示 Snackbar
+			return;
+		}
+
+		try {
+			// 调用后端 API 更新产品
+			const response = await axios.put(`http://localhost:5005/api/user/users/${editUserId}`, tempEditedUser);
+				console.log(response.data.message); // 打印成功消息
+				setSnackbarMessage('User saved successfully!');  // 设置成功消息
+				setSnackbarSeverity('success');  // 设置成功类型
+				setOpenSnackbar(true); // 显示提示
+
+				setUsers((prev) =>
+					prev.map((user) =>
+						user.UserID === tempEditedUser.UserID
+							? { ...user, ...tempEditedUser } // 合并未编辑的字段
+							: user
+					)
+				);
+
+				setEditUserId(null); // 退出编辑模式
+				setTempEditedUser(null); // 清空临时状态
+
+		} catch (error) {
+			console.error('Error saving user:', error);
+			setSnackbarMessage('Failed to save user'); // 设置错误消息
+			setSnackbarSeverity('error');  // 设置错误类型
+			setOpenSnackbar(true);  // 显示错误消息
+		}
 	};
 
 	const handleFetchUsers = async () => {
@@ -80,6 +151,7 @@ const UserManagement = () => {
 	}, []);
 
 	return (
+		<div>
 		<TableContainer component={Paper}>
 			<Table>
 				<TableHead>
@@ -89,7 +161,7 @@ const UserManagement = () => {
 						<TableCell>Middle Name </TableCell>
 						<TableCell>Last Name <span style={{ color: 'red' }}>*</span></TableCell>
 						<TableCell>Address <span style={{ color: 'red' }}>*</span></TableCell>
-						<TableCell>Email</TableCell>
+						<TableCell>Email <span style={{ color: 'red' }}>*</span></TableCell>
 						<TableCell>Payment Method <span style={{ color: 'red' }}>*</span></TableCell>
 						<TableCell>Is Admin <span style={{ color: 'red' }}>*</span></TableCell>
 						<TableCell>Actions</TableCell>
@@ -102,9 +174,9 @@ const UserManagement = () => {
 							<TableCell>
 								{editUserId === user.UserID ? (
 									<TextField
-										value={user.FirstName}
+										value={tempEditedUser?.FirstName || ''} // 临时保存的值
 										onChange={(e) =>
-											handleUserEdit(user.UserID, "FirstName", e.target.value)
+											handleTempUserEdit('FirstName', e.target.value)
 										}
 									/>
 								) : (
@@ -114,9 +186,9 @@ const UserManagement = () => {
 							<TableCell>
 								{editUserId === user.UserID ? (
 									<TextField
-										value={user.MiddleName}
+										value={tempEditedUser?.MiddleName || ''}
 										onChange={(e) =>
-											handleUserEdit(user.UserID, "MiddleName", e.target.value)
+											handleTempUserEdit('MiddleName', e.target.value)
 										}
 									/>
 								) : (
@@ -126,9 +198,9 @@ const UserManagement = () => {
 							<TableCell>
 								{editUserId === user.UserID ? (
 									<TextField
-										value={user.LastName}
+										value={tempEditedUser?.LastName || ''}
 										onChange={(e) =>
-											handleUserEdit(user.UserID, "LastName", e.target.value)
+											handleTempUserEdit('LastName', e.target.value)
 										}
 									/>
 								) : (
@@ -138,9 +210,9 @@ const UserManagement = () => {
 							<TableCell>
 								{editUserId === user.UserID ? (
 									<TextField
-										value={user.Address}
+										value={tempEditedUser?.Address || ''}
 										onChange={(e) =>
-											handleUserEdit(user.UserID, "Address", e.target.value)
+											handleTempUserEdit('Address', e.target.value)
 										}
 									/>
 								) : (
@@ -150,9 +222,9 @@ const UserManagement = () => {
 							<TableCell>
 								{editUserId === user.UserID ? (
 									<TextField
-										value={user.Email}
+										value={tempEditedUser?.Email || ''}
 										onChange={(e) =>
-											handleUserEdit(user.UserID, "Email", e.target.value)
+											handleTempUserEdit('Email', e.target.value)
 										}
 									/>
 								) : (
@@ -163,13 +235,8 @@ const UserManagement = () => {
 								{editUserId === user.UserID ? (
 									<FormControl fullWidth>
 										<Select
-											value={editedUser?.PaymentMethod || user.PaymentMethod} // 临时保存选中的值
-											onChange={(e) =>
-												setEditedUser((prev) => ({
-													...prev,
-													PaymentMethod: e.target.value, // 更新临时状态
-												}))
-											}
+											value={tempEditedUser?.PaymentMethod || ''} // 临时保存选中的值
+											onChange={(e) => handleTempUserEdit('PaymentMethod', e.target.value)}// 更新临时状态
 										>
 											{paymentMethods.map((method, index) => (
 												<MenuItem key={index} value={method}>
@@ -186,13 +253,8 @@ const UserManagement = () => {
 								{editUserId === user.UserID ? (
 									<FormControl fullWidth>
 										<Select
-											value={editedUser?.IsAdmin || user.IsAdmin} // 临时保存选中的值
-											onChange={(e) =>
-												setEditedUser((prev) => ({
-													...prev,
-													IsAdmin: e.target.value, // 更新临时状态
-												}))
-											}
+											value={tempEditedUser?.IsAdmin || ''} // 临时保存选中的值
+											onChange={(e) => handleTempUserEdit('IsAdmin', e.target.value)}// 更新临时状态
 										>
 											{isadmins.map((method, index) => (
 												<MenuItem key={index} value={method}>
@@ -213,8 +275,7 @@ const UserManagement = () => {
 								) : (
 									// 如果没有编辑当前用户，显示编辑按钮
 									<IconButton onClick={() => {
-										setEditUserId(user.UserID);
-										//setEditedUser(user); // 复制用户信息到编辑状态
+										handleEditClick(user);
 									}}>
 										<Edit />
 									</IconButton>
@@ -225,6 +286,22 @@ const UserManagement = () => {
 				</TableBody>
 			</Table>
 		</TableContainer>
+
+		<Snackbar
+				open={openSnackbar}
+				autoHideDuration={3000}
+				onClose={() => setOpenSnackbar(false)}
+			>
+				<Alert
+					onClose={() => setOpenSnackbar(false)}
+					severity={snackbarSeverity} // 根据错误或成功显示不同颜色
+					sx={{ width: '100%' }}
+				>
+					{snackbarMessage}  {/* 显示提示消息 */}
+				</Alert>
+			</Snackbar>
+		</div>
+		
 	);
 }
 
@@ -258,16 +335,16 @@ const ProductManagement = () => {
 		}
 
 		const price = Number(product.ProductPrice);
-		if (isNaN(price) || price <= 0)  {
+		if (isNaN(price) || price <= 0) {
 			return "Product price must be a number greater than zero.";
 		}
 
 		if (product.ProductStock === "") {
 			return "Product stock is required.";
 		}
-	
+
 		const stock = Number(product.ProductStock);
-	
+
 		if (isNaN(stock) || stock < 0) {
 			return "Product stock must be a number greater than or equal to zero.";
 		}
@@ -327,128 +404,128 @@ const ProductManagement = () => {
 
 	return (
 		<div>
-		<TableContainer component={Paper}>
-			<Table>
-				<TableHead>
-					<TableRow>
-						<TableCell>ID</TableCell>
-						<TableCell>Name <span style={{ color: 'red' }}>*</span></TableCell>
-						<TableCell>Type <span style={{ color: 'red' }}>*</span></TableCell>
-						<TableCell>Specifications</TableCell>
-						<TableCell>Image</TableCell>
-						<TableCell>Price($) <span style={{ color: 'red' }}>*</span></TableCell>
-						<TableCell>Stock <span style={{ color: 'red' }}>*</span></TableCell>
-						<TableCell>Actions</TableCell>
-					</TableRow>
-				</TableHead>
-				<TableBody>
-					{products.map((product) => (
-						<TableRow key={product.ProductID}>
-							<TableCell>{product.ProductID}</TableCell>
-							<TableCell>
-								{editProductId === product.ProductID ? (
-									<TextField
-										value={product.ProductName}
-										onChange={(e) =>
-											handleProductEdit(product.ProductID, "ProductName", e.target.value)
-										}
-									/>
-								) : (
-									product.ProductName
-								)}
-							</TableCell>
-							<TableCell>
-								{editProductId === product.ProductID ? (
-									<TextField
-										value={product.ProductType}
-										onChange={(e) =>
-											handleProductEdit(product.ProductID, "ProductType", e.target.value)
-										}
-									/>
-								) : (
-									product.ProductType
-								)}
-							</TableCell>
-							<TableCell>
-								{editProductId === product.ProductID ? (
-									<TextField
-										value={product.ProductSpecifications}
-										onChange={(e) =>
-											handleProductEdit(product.ProductID, "ProductSpecifications", e.target.value)
-										}
-									/>
-								) : (
-									product.ProductSpecifications
-								)}
-							</TableCell>
-							<TableCell>
-								{editProductId === product.ProductID ? (
-									<TextField
-										value={product.ProductImage}
-										onChange={(e) =>
-											handleProductEdit(product.ProductID, "ProductImage", e.target.value)
-										}
-									/>
-								) : (
-									product.ProductImage
-								)}
-							</TableCell>
-							<TableCell>
-								{editProductId === product.ProductID ? (
-									<TextField
-										value={product.ProductPrice}
-										onChange={(e) =>
-											handleProductEdit(product.ProductID, "ProductPrice", e.target.value)
-										}
-									/>
-								) : (
-									product.ProductPrice
-								)}
-							</TableCell>
-							<TableCell>
-								{editProductId === product.ProductID ? (
-									<TextField
-										value={product.ProductStock}
-										onChange={(e) =>
-											handleProductEdit(product.ProductID, "ProductStock", e.target.value)
-										}
-									/>
-								) : (
-									product.ProductStock
-								)}
-							</TableCell>
-							<TableCell>
-								{editProductId === product.ProductID ? (
-									<IconButton onClick={handleProductSave}>
-										<Save />
-									</IconButton>
-								) : (
-									<IconButton onClick={() => setEditProductId(product.ProductID)}>
-										<Edit />
-									</IconButton>
-								)}
-							</TableCell>
+			<TableContainer component={Paper}>
+				<Table>
+					<TableHead>
+						<TableRow>
+							<TableCell>ID</TableCell>
+							<TableCell>Name <span style={{ color: 'red' }}>*</span></TableCell>
+							<TableCell>Type <span style={{ color: 'red' }}>*</span></TableCell>
+							<TableCell>Specifications</TableCell>
+							<TableCell>Image</TableCell>
+							<TableCell>Price($) <span style={{ color: 'red' }}>*</span></TableCell>
+							<TableCell>Stock <span style={{ color: 'red' }}>*</span></TableCell>
+							<TableCell>Actions</TableCell>
 						</TableRow>
-					))}
-				</TableBody>
-			</Table>
-		</TableContainer>
+					</TableHead>
+					<TableBody>
+						{products.map((product) => (
+							<TableRow key={product.ProductID}>
+								<TableCell>{product.ProductID}</TableCell>
+								<TableCell>
+									{editProductId === product.ProductID ? (
+										<TextField
+											value={product.ProductName}
+											onChange={(e) =>
+												handleProductEdit(product.ProductID, "ProductName", e.target.value)
+											}
+										/>
+									) : (
+										product.ProductName
+									)}
+								</TableCell>
+								<TableCell>
+									{editProductId === product.ProductID ? (
+										<TextField
+											value={product.ProductType}
+											onChange={(e) =>
+												handleProductEdit(product.ProductID, "ProductType", e.target.value)
+											}
+										/>
+									) : (
+										product.ProductType
+									)}
+								</TableCell>
+								<TableCell>
+									{editProductId === product.ProductID ? (
+										<TextField
+											value={product.ProductSpecifications}
+											onChange={(e) =>
+												handleProductEdit(product.ProductID, "ProductSpecifications", e.target.value)
+											}
+										/>
+									) : (
+										product.ProductSpecifications
+									)}
+								</TableCell>
+								<TableCell>
+									{editProductId === product.ProductID ? (
+										<TextField
+											value={product.ProductImage}
+											onChange={(e) =>
+												handleProductEdit(product.ProductID, "ProductImage", e.target.value)
+											}
+										/>
+									) : (
+										product.ProductImage
+									)}
+								</TableCell>
+								<TableCell>
+									{editProductId === product.ProductID ? (
+										<TextField
+											value={product.ProductPrice}
+											onChange={(e) =>
+												handleProductEdit(product.ProductID, "ProductPrice", e.target.value)
+											}
+										/>
+									) : (
+										product.ProductPrice
+									)}
+								</TableCell>
+								<TableCell>
+									{editProductId === product.ProductID ? (
+										<TextField
+											value={product.ProductStock}
+											onChange={(e) =>
+												handleProductEdit(product.ProductID, "ProductStock", e.target.value)
+											}
+										/>
+									) : (
+										product.ProductStock
+									)}
+								</TableCell>
+								<TableCell>
+									{editProductId === product.ProductID ? (
+										<IconButton onClick={handleProductSave}>
+											<Save />
+										</IconButton>
+									) : (
+										<IconButton onClick={() => setEditProductId(product.ProductID)}>
+											<Edit />
+										</IconButton>
+									)}
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			</TableContainer>
 
 
-	<Snackbar
-		open={openSnackbar}
-		autoHideDuration={3000}
-		onClose={() => setOpenSnackbar(false)}
-	>
-		<Alert
-			onClose={() => setOpenSnackbar(false)}
-			severity={snackbarSeverity} // 根据错误或成功显示不同颜色
-			sx={{ width: '100%' }}
-		>
-			{snackbarMessage}  {/* 显示提示消息 */}
-		</Alert>
-	</Snackbar>
-	</div>
+			<Snackbar
+				open={openSnackbar}
+				autoHideDuration={3000}
+				onClose={() => setOpenSnackbar(false)}
+			>
+				<Alert
+					onClose={() => setOpenSnackbar(false)}
+					severity={snackbarSeverity} // 根据错误或成功显示不同颜色
+					sx={{ width: '100%' }}
+				>
+					{snackbarMessage}  {/* 显示提示消息 */}
+				</Alert>
+			</Snackbar>
+		</div>
 
 	);
 }
