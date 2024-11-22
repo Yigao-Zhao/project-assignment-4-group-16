@@ -7,7 +7,7 @@ const User = {
         return rows[0]; 
     },
 	getAllUsers: async () => {
-	        const query = 'SELECT UserID, FirstName, Email, IsAdmin FROM user';
+	        const query = 'SELECT UserID, FirstName, MiddleName, LastName, Address, Email, PaymentMethod,IsAdmin FROM user';
 	        const [rows] = await db.query(query);
 	        return rows; 
 	    },
