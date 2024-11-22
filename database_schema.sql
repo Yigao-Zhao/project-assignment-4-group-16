@@ -6,7 +6,7 @@ CREATE TABLE user (
     MiddleName VARCHAR(50),
     LastName VARCHAR(50),
     Address VARCHAR(255),
-    Email VARCHAR(100),
+    Email VARCHAR(100) UNIQUE,
     MyPassword VARCHAR(255), 
     PaymentMethod VARCHAR(50),
     IsAdmin VARCHAR(50)

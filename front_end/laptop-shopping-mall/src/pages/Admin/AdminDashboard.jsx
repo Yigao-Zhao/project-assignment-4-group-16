@@ -32,7 +32,7 @@ import {
 	DialogTitle,
 	Alert
 } from "@mui/material";
-import { Edit, Save, Add, Delete } from "@mui/icons-material";
+import { Edit, Save, Add, Delete, Cancel } from "@mui/icons-material";
 
 const paymentMethods = ['Credit Card', 'PayPal', 'Bank Transfer'];
 
@@ -73,27 +73,32 @@ const UserManagement = () => {
 		setTempEditedUser({ ...user }); // 将用户数据复制到临时状态
 	};
 
+	const handleCancelClick = () => {
+		setEditUserId(null); // 退出编辑模式
+		setTempEditedUser(null); // 清除临时编辑数据
+	};
+
 	const handleTempUserEdit = (field, value) => {
 		setTempEditedUser((prev) => ({ ...prev, [field]: value }));
 	};
 
 	const validateUser = (user) => {
 		const errors = {};
-	
+
 		// 姓名字段校验
 		if (!user.FirstName) {
 			errors.FirstName = "First name is required.";
 		}
-	
+
 		if (!user.LastName) {
 			errors.LastName = "Last name is required.";
 		}
-	
+
 		// 地址字段校验
 		if (!user.Address) {
 			errors.Address = "Address is required.";
 		}
-	
+
 		// 邮箱校验
 		const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 		if (!user.Email) {
@@ -101,26 +106,37 @@ const UserManagement = () => {
 		} else if (!emailPattern.test(user.Email)) {
 			errors.Email = "Invalid email format.";
 		}
-	
+
 		// 支付方式校验
 		if (!user.PaymentMethod) {
 			errors.PaymentMethod = "Payment method is required.";
 		}
-	
+
 		// 管理员标志校验
 		if (!user.IsAdmin) {
 			errors.IsAdmin = "IsAdmin is required.";
 		}
-	
+
 		return errors;  // 返回包含错误信息的对象
 	};
+
+	const checkEmailExists = async (email) => {
+		try {
+			const response = await axios.get(`http://localhost:5005/api/user/check-email?email=${email}`);
+			return response.data.exists;  // 如果邮箱存在，则返回 true
+		} catch (error) {
+			console.error('Error checking email:', error);
+			return false;
+		}
+	};
+
 
 	const handleUserSave = async () => {
 
 		if (!tempEditedUser) return;
 
 		const validationError = validateUser(tempEditedUser);
-		if (Object.keys(validationError).length > 0){
+		if (Object.keys(validationError).length > 0) {
 			console.log("Validation failed:", validationError);
 			setError(validationError);
 			const errorMessages = Object.values(validationError).join(', ');
@@ -130,8 +146,17 @@ const UserManagement = () => {
 			return;
 		}
 
+		// 在保存之前先校验邮箱是否唯一
+		const emailExists = await checkEmailExists(newUser.Email);
+		if (emailExists) {
+			setSnackbarMessage('Email already exists.');
+			setSnackbarSeverity('error');
+			setOpenSnackbar(true);
+			return;
+		}
+
 		try {
-			// 调用后端 API 更新产品
+			// 调用后端 API 更新user
 			const response = await axios.put(`http://localhost:5005/api/user/users/${editUserId}`, tempEditedUser);
 			console.log(response.data.message); // 打印成功消息
 			setSnackbarMessage('User saved successfully!');  // 设置成功消息
@@ -191,16 +216,27 @@ const UserManagement = () => {
 		const validationError = validateUser(newUser); // 使用通用的校验函数
 		if (Object.keys(validationError).length > 0) {
 			console.log("Validation failed:", validationError);
-	
+
 			// 更新错误信息状态
 			setError(validationError);
-	
+
 			// 显示错误消息
 			setSnackbarMessage("Please correct the errors before submitting.");
 			setSnackbarSeverity('error');
 			setOpenSnackbar(true); // 显示 Snackbar
 			return;
 		}
+
+		// 在保存之前先校验邮箱是否唯一
+		const emailExists = await checkEmailExists(newUser.Email);
+		if (emailExists) {
+			setSnackbarMessage('Email already exists.');
+			setSnackbarSeverity('error');
+			setOpenSnackbar(true);
+			return;
+		}
+
+
 		try {
 			const response = await axios.post('http://localhost:5005/api/user/users', newUser);
 			if (response.data.success) {
@@ -371,9 +407,14 @@ const UserManagement = () => {
 								</TableCell>
 								<TableCell>
 									{editUserId === user.UserID ? (
-										<IconButton onClick={handleUserSave}>
-											<Save />
-										</IconButton>
+										<Box display="flex" alignItems="center">
+											<IconButton onClick={handleUserSave}>
+												<Save />
+											</IconButton>
+											<IconButton onClick={handleCancelClick}>
+												<Cancel />
+											</IconButton>
+										</Box>
 									) : (
 										<Box display="flex" alignItems="center">
 											<IconButton onClick={() => {
@@ -418,7 +459,7 @@ const UserManagement = () => {
 											onChange={(e) => setNewUser({ ...newUser, FirstName: e.target.value })}
 											required
 											error={!!error?.FirstName}
-											helperText={error?.FirstName||''}
+											helperText={error?.FirstName || ''}
 											margin="dense"
 										/>
 										<TextField
@@ -434,7 +475,7 @@ const UserManagement = () => {
 											onChange={(e) => setNewUser({ ...newUser, LastName: e.target.value })}
 											required
 											error={!!error?.LastName}
-											helperText={error?.LastName||''}
+											helperText={error?.LastName || ''}
 											margin="dense"
 										/>
 										<TextField
@@ -444,7 +485,7 @@ const UserManagement = () => {
 											onChange={(e) => setNewUser({ ...newUser, Address: e.target.value })}
 											required
 											error={!!error?.Address}
-											helperText={error?.Address||''}
+											helperText={error?.Address || ''}
 											margin="dense"
 										/>
 										<TextField
@@ -454,7 +495,7 @@ const UserManagement = () => {
 											onChange={(e) => setNewUser({ ...newUser, Email: e.target.value })}
 											required
 											error={!!error?.Email}
-											helperText={error?.Email||''}
+											helperText={error?.Email || ''}
 											margin="dense"
 										/>
 										{/* Payment Method Dropdown */}
@@ -466,7 +507,7 @@ const UserManagement = () => {
 												onChange={(e) => setNewUser({ ...newUser, PaymentMethod: e.target.value })}
 												required
 												error={!!error?.PaymentMethod}
-												helperText={error?.PaymentMethod||''}
+												helperText={error?.PaymentMethod || ''}
 												margin="dense"
 											>
 												{paymentMethods.map((method, index) => (
@@ -485,7 +526,7 @@ const UserManagement = () => {
 												onChange={(e) => setNewUser({ ...newUser, IsAdmin: e.target.value })}
 												required
 												error={!!error?.IsAdmin}
-												helperText={error?.IsAdmin||''}
+												helperText={error?.IsAdmin || ''}
 												margin="dense"
 											>
 												<MenuItem value="Y">Yes</MenuItem>
@@ -534,66 +575,104 @@ const ProductManagement = () => {
 	const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 控制 Snackbar 类型（成功或错误）
 	const [openConfirmDialog, setOpenConfirmDialog] = useState(false); // 控制确认删除对话框
 	const [productToDelete, setProductToDelete] = useState(null); // 存储待删除的产品ID
+	const [tempEditedProduct, setTempEditedProduct] = useState(null); // 临时保存编辑的产品数据
 
-	const handleProductEdit = (id, field, value) => {
-		setProducts((prev) =>
-			prev.map((product) => (product.ProductID === id ? { ...product, [field]: value } : product))
-		);
+	//const handleProductEdit = (id, field, value) => {
+	//	setProducts((prev) =>
+	//		prev.map((product) =>
+	//			product.ProductID === id ? { ...product, [field]: value } : product
+	//		)
+	//	);
+	//	setTempEditedProduct(prev => ({
+	//		...prev,
+	//		[field]: value,
+	//	}));
+	//};
+
+	const handleProductCancel = () => {
+		// 取消编辑时，恢复原始数据
+		setEditProductId(null);
+		setTempEditedProduct(null); // 清除临时保存的编辑数据
+	};
+
+	const handleTempProductEdit = (field, value) => {
+		setTempEditedProduct((prev) => ({ ...prev, [field]: value }));
+	};
+
+
+	const handleEditClick = (product) => {
+		setEditProductId(product.ProductID);
+		setTempEditedProduct({ ...product }); // 将product数据复制到临时状态
 	};
 
 	const validateProduct = (product) => {
+		const errors = {};
 		if (!product.ProductName) {
-			return "Product name is required.";
+			errors.ProductName = "Product name is required.";
 		}
 		if (!product.ProductType) {
-			return "Product type is required.";
+			errors.ProductType = "Product type is required.";
 		}
 
 		if (product.ProductPrice === "") {
-			return "Product price is required.";
+			errors.ProductPrice =  "Product price is required.";
 		}
 
 		const price = Number(product.ProductPrice);
 		if (isNaN(price) || price <= 0) {
-			return "Product price must be a number greater than zero.";
+			errors.ProductPrice =  "Product price must be a number greater than zero.";
 		}
 
 		if (product.ProductStock === "") {
-			return "Product stock is required.";
+			errors.ProductStock = "Product stock is required.";
 		}
 
 		const stock = Number(product.ProductStock);
 
-		if (isNaN(stock) || stock < 0) {
-			return "Product stock must be a number greater than or equal to zero.";
+		if (isNaN(stock) || stock <= 0 || !Number.isInteger(stock)) {
+			errors.ProductStock =  "Product stock must be a positive integer.";
 		}
-		return null; // 返回 null 表示没有错误
+		return errors; // 返回 null 表示没有错误
 	};
 
 	const handleProductSave = async () => {
-		const productToSave = products.find((p) => p.ProductID === editProductId);
-
+		if (!tempEditedProduct) return;
 		// 验证产品数据
-		const validationError = validateProduct(productToSave);
-		if (validationError) {
+
+		const validationError = validateProduct(tempEditedProduct);
+
+		if (Object.keys(validationError).length > 0) {
 			console.log("Validation failed:", validationError);
 			setError(validationError);
-			setSnackbarMessage(validationError);  // 设置错误消息
+			const errorMessages = Object.values(validationError).join(', ');
+			setSnackbarMessage(errorMessages);  // 设置错误消息
 			setSnackbarSeverity('error');  // 设置错误类型
 			setOpenSnackbar(true); // 显示 Snackbar
 			return;
 		}
 
+
+
+		
+		//if (validationError) {
+		//	console.log("Validation failed:", validationError);
+		//	setError(validationError);
+		//	setSnackbarMessage(validationError);  // 设置错误消息
+		//	setSnackbarSeverity('error');  // 设置错误类型
+		//	setOpenSnackbar(true); // 显示 Snackbar
+		//	return;
+	//	}
+
 		try {
 			// 调用后端 API 更新产品
-			const response = await axios.put(`http://localhost:5005/api/product/products/${editProductId}`, productToSave);
+			const response = await axios.put(`http://localhost:5005/api/product/products/${editProductId}`, tempEditedProduct);
 
 			console.log(response.data.message); // 打印成功消息
 			setSnackbarMessage('Product saved successfully!');  // 设置成功消息
 			setSnackbarSeverity('success');  // 设置成功类型
 			setOpenSnackbar(true); // 显示提示
 			setEditProductId(null); // 退出编辑模式
-
+			setTempEditedProduct(null); // 清除临时编辑数据
 			// 重新获取产品列表
 			handleFetchProducts();
 		} catch (error) {
@@ -673,9 +752,9 @@ const ProductManagement = () => {
 								<TableCell>
 									{editProductId === product.ProductID ? (
 										<TextField
-											value={product.ProductName}
+											value={tempEditedProduct?.ProductName || ''}
 											onChange={(e) =>
-												handleProductEdit(product.ProductID, "ProductName", e.target.value)
+												handleTempProductEdit("ProductName", e.target.value)
 											}
 										/>
 									) : (
@@ -685,9 +764,9 @@ const ProductManagement = () => {
 								<TableCell>
 									{editProductId === product.ProductID ? (
 										<TextField
-											value={product.ProductType}
+											value={tempEditedProduct?.ProductType || ''}
 											onChange={(e) =>
-												handleProductEdit(product.ProductID, "ProductType", e.target.value)
+												handleTempProductEdit("ProductType", e.target.value)
 											}
 										/>
 									) : (
@@ -697,9 +776,9 @@ const ProductManagement = () => {
 								<TableCell>
 									{editProductId === product.ProductID ? (
 										<TextField
-											value={product.ProductSpecifications}
+											value={tempEditedProduct?.ProductSpecifications || ''}
 											onChange={(e) =>
-												handleProductEdit(product.ProductID, "ProductSpecifications", e.target.value)
+												handleTempProductEdit("ProductSpecifications", e.target.value)
 											}
 										/>
 									) : (
@@ -709,9 +788,9 @@ const ProductManagement = () => {
 								<TableCell>
 									{editProductId === product.ProductID ? (
 										<TextField
-											value={product.ProductImage}
+											value={tempEditedProduct?.ProductImage || ''}
 											onChange={(e) =>
-												handleProductEdit(product.ProductID, "ProductImage", e.target.value)
+												handleTempProductEdit("ProductImage", e.target.value)
 											}
 										/>
 									) : (
@@ -721,9 +800,9 @@ const ProductManagement = () => {
 								<TableCell>
 									{editProductId === product.ProductID ? (
 										<TextField
-											value={product.ProductPrice}
+											value={tempEditedProduct?.ProductPrice || ''}
 											onChange={(e) =>
-												handleProductEdit(product.ProductID, "ProductPrice", e.target.value)
+												handleTempProductEdit("ProductPrice", e.target.value)
 											}
 										/>
 									) : (
@@ -733,9 +812,9 @@ const ProductManagement = () => {
 								<TableCell>
 									{editProductId === product.ProductID ? (
 										<TextField
-											value={product.ProductStock}
+											value={tempEditedProduct?.ProductStock || ''}
 											onChange={(e) =>
-												handleProductEdit(product.ProductID, "ProductStock", e.target.value)
+												handleTempProductEdit("ProductStock", e.target.value)
 											}
 										/>
 									) : (
@@ -745,13 +824,18 @@ const ProductManagement = () => {
 								<TableCell>
 									{editProductId === product.ProductID ? (
 
-										<IconButton onClick={handleProductSave}>
-											<Save />
-										</IconButton>
+										<Box display="flex" alignItems="center">
+											<IconButton onClick={handleProductSave}>
+												<Save />
+											</IconButton>
+											<IconButton onClick={handleProductCancel}>
+												<Cancel />
+											</IconButton>
+										</Box>
 
 									) : (
 										<Box display="flex" alignItems="center">
-											<IconButton onClick={() => setEditProductId(product.ProductID)}>
+											<IconButton onClick={() => handleEditClick(product)}>
 												<Edit />
 											</IconButton>
 											<IconButton onClick={() => handleConfirmDelete(product.ProductID)}>
