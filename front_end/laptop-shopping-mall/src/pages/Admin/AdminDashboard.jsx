@@ -47,13 +47,21 @@ const UserManagement = () => {
 
 
 	const [users, setUsers] = useState([]);
-	const [error, setError] = useState(null);
+	const [error, setError] = useState({});
 	const [openSnackbar, setOpenSnackbar] = useState(false);  // Snackbar 显示状态
 	const [snackbarMessage, setSnackbarMessage] = useState(''); // 显示的提示消息
 	const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 控制 Snackbar 类型（成功或错误
 	const [openConfirmDialog, setOpenConfirmDialog] = useState(false); // 控制确认删除对话框
 	const [userToDelete, setUserToDelete] = useState(null); // 存储待删除的userID
-
+	const [showAddUserDialog, setShowAddUserDialog] = useState(false); // 控制 Add User 弹窗显示
+	const [newUser, setNewUser] = useState({
+		FirstName: '',
+		LastName: '',
+		Address: '',
+		Email: '',
+		PaymentMethod: 'Credit Card', // 默认值为信用卡
+		IsAdmin: 'N', // 默认值为非管理员
+	});
 
 	// 编辑状态控制
 	const [editUserId, setEditUserId] = useState(null);
@@ -70,45 +78,53 @@ const UserManagement = () => {
 	};
 
 	const validateUser = (user) => {
+		const errors = {};
+	
+		// 姓名字段校验
 		if (!user.FirstName) {
-			return "First name is required.";
+			errors.FirstName = "First name is required.";
 		}
+	
 		if (!user.LastName) {
-			return "Last Name is required.";
+			errors.LastName = "Last name is required.";
 		}
-
+	
+		// 地址字段校验
 		if (!user.Address) {
-			return "Address is required.";
+			errors.Address = "Address is required.";
 		}
-
+	
+		// 邮箱校验
 		const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 		if (!user.Email) {
-			return "Email is required.";
+			errors.Email = "Email is required.";
 		} else if (!emailPattern.test(user.Email)) {
-			return "Invalid email format.";
+			errors.Email = "Invalid email format.";
 		}
-
+	
+		// 支付方式校验
 		if (!user.PaymentMethod) {
-			return "Payment method is required.";
+			errors.PaymentMethod = "Payment method is required.";
 		}
-
+	
+		// 管理员标志校验
 		if (!user.IsAdmin) {
-			return "IsAdmin is required.";
+			errors.IsAdmin = "IsAdmin is required.";
 		}
-
-		return null; // 返回 null 表示没有错误
+	
+		return errors;  // 返回包含错误信息的对象
 	};
-
 
 	const handleUserSave = async () => {
 
 		if (!tempEditedUser) return;
 
 		const validationError = validateUser(tempEditedUser);
-		if (validationError) {
+		if (Object.keys(validationError).length > 0){
 			console.log("Validation failed:", validationError);
 			setError(validationError);
-			setSnackbarMessage(validationError);  // 设置错误消息
+			const errorMessages = Object.values(validationError).join(', ');
+			setSnackbarMessage(errorMessages);  // 设置错误消息
 			setSnackbarSeverity('error');  // 设置错误类型
 			setOpenSnackbar(true); // 显示 Snackbar
 			return;
@@ -145,6 +161,7 @@ const UserManagement = () => {
 	const handleDeleteUser = async (id) => {
 		try {
 			const response = await axios.delete(`http://localhost:5005/api/user/users/${userToDelete}`);
+
 			if (response.data.success) {
 				setUsers((prev) => prev.filter((user) => user.UserID !== userToDelete));
 				setOpenConfirmDialog(false); // 关闭确认对话框
@@ -170,6 +187,45 @@ const UserManagement = () => {
 		setOpenConfirmDialog(true); // 打开删除确认对话框
 	};
 
+	const handleAddUser = async () => {
+		const validationError = validateUser(newUser); // 使用通用的校验函数
+		if (Object.keys(validationError).length > 0) {
+			console.log("Validation failed:", validationError);
+	
+			// 更新错误信息状态
+			setError(validationError);
+	
+			// 显示错误消息
+			setSnackbarMessage("Please correct the errors before submitting.");
+			setSnackbarSeverity('error');
+			setOpenSnackbar(true); // 显示 Snackbar
+			return;
+		}
+		try {
+			const response = await axios.post('http://localhost:5005/api/user/users', newUser);
+			if (response.data.success) {
+				setSnackbarMessage('User added successfully!');
+				setSnackbarSeverity('success');
+				setOpenSnackbar(true);
+
+				// 更新用户列表
+				setUsers((prevUsers) => [
+					...prevUsers,
+					{ ...newUser, UserID: response.data.userId } // 添加新用户到列表
+				]);
+				setShowAddUserDialog(false); // 关闭添加用户对话框
+
+			} else {
+				throw new Error(response.data.message || 'Failed to add user.');
+			}
+		} catch (error) {
+			console.error('Error adding user:', error);
+			setSnackbarMessage('Failed to add user.');
+			setSnackbarSeverity('error');
+			setOpenSnackbar(true);
+		}
+	};
+
 	const handleFetchUsers = async () => {
 		setError('');
 		try {
@@ -186,6 +242,18 @@ const UserManagement = () => {
 
 	return (
 		<div>
+			{/* Header Section */}
+			<Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+				<Button
+					variant="contained"
+					color="primary"
+					onClick={() => setShowAddUserDialog(true)}
+				>
+					Add User
+				</Button>
+			</Box>
+
+
 			<TableContainer component={Paper}>
 				<Table>
 					<TableHead>
@@ -322,23 +390,114 @@ const UserManagement = () => {
 
 								{/* 删除确认对话框 */}
 								<Dialog open={openConfirmDialog} onClose={() => setOpenConfirmDialog(false)}>
-										<DialogTitle>Confirm Deletion</DialogTitle>
-										<DialogContent>
-											Are you sure you want to delete this user?
-										</DialogContent>
-										<DialogActions>
-											<Button onClick={() => setOpenConfirmDialog(false)} color="primary">
-												Cancel
-											</Button>
-											<Button
-												onClick={handleDeleteUser}
-												color="secondary"
-												variant="contained"
+									<DialogTitle>Confirm Deletion</DialogTitle>
+									<DialogContent>
+										Are you sure you want to delete this user?
+									</DialogContent>
+									<DialogActions>
+										<Button onClick={() => setOpenConfirmDialog(false)} color="primary">
+											Cancel
+										</Button>
+										<Button
+											onClick={handleDeleteUser}
+											color="secondary"
+											variant="contained"
+										>
+											Delete
+										</Button>
+									</DialogActions>
+								</Dialog>
+
+								<Dialog open={showAddUserDialog} onClose={() => setShowAddUserDialog(false)}>
+									<DialogTitle>Add New User</DialogTitle>
+									<DialogContent>
+										<TextField
+											label="First Name"
+											fullWidth
+											value={newUser.FirstName}
+											onChange={(e) => setNewUser({ ...newUser, FirstName: e.target.value })}
+											required
+											error={!!error?.FirstName}
+											helperText={error?.FirstName||''}
+											margin="dense"
+										/>
+										<TextField
+											label="Middle Name"
+											fullWidth
+											value={newUser.MiddleName}
+											onChange={(e) => setNewUser({ ...newUser, FirstName: e.target.value })}
+										/>
+										<TextField
+											label="Last Name"
+											fullWidth
+											value={newUser.LastName}
+											onChange={(e) => setNewUser({ ...newUser, LastName: e.target.value })}
+											required
+											error={!!error?.LastName}
+											helperText={error?.LastName||''}
+											margin="dense"
+										/>
+										<TextField
+											label="Address"
+											fullWidth
+											value={newUser.Address}
+											onChange={(e) => setNewUser({ ...newUser, Address: e.target.value })}
+											required
+											error={!!error?.Address}
+											helperText={error?.Address||''}
+											margin="dense"
+										/>
+										<TextField
+											label="Email"
+											fullWidth
+											value={newUser.Email}
+											onChange={(e) => setNewUser({ ...newUser, Email: e.target.value })}
+											required
+											error={!!error?.Email}
+											helperText={error?.Email||''}
+											margin="dense"
+										/>
+										{/* Payment Method Dropdown */}
+										<FormControl fullWidth margin="normal">
+											<InputLabel id="payment-method-label">Payment Method</InputLabel>
+											<Select
+												labelId="payment-method-label"
+												value={newUser.PaymentMethod || ''}
+												onChange={(e) => setNewUser({ ...newUser, PaymentMethod: e.target.value })}
+												required
+												error={!!error?.PaymentMethod}
+												helperText={error?.PaymentMethod||''}
+												margin="dense"
 											>
-												Delete
-											</Button>
-										</DialogActions>
-									</Dialog>
+												{paymentMethods.map((method, index) => (
+													<MenuItem key={index} value={method}>
+														{method}
+													</MenuItem>
+												))}
+											</Select>
+										</FormControl>
+										{/* Is Admin Dropdown */}
+										<FormControl fullWidth margin="normal">
+											<InputLabel id="is-admin-label">Is Admin</InputLabel>
+											<Select
+												labelId="is-admin-label"
+												value={newUser.IsAdmin || ''}
+												onChange={(e) => setNewUser({ ...newUser, IsAdmin: e.target.value })}
+												required
+												error={!!error?.IsAdmin}
+												helperText={error?.IsAdmin||''}
+												margin="dense"
+											>
+												<MenuItem value="Y">Yes</MenuItem>
+												<MenuItem value="N">No</MenuItem>
+											</Select>
+										</FormControl>
+									</DialogContent>
+									<DialogActions>
+										<Button onClick={() => setShowAddUserDialog(false)}>Cancel</Button>
+										<Button onClick={() => handleAddUser(newUser)}>Add User</Button>
+									</DialogActions>
+								</Dialog>
 							</TableRow>
 						))}
 					</TableBody>

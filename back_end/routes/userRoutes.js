@@ -67,6 +67,33 @@ router.delete('/users/:id', async (req, res) => {
     }
   });
 
+  // 添加新用户
+router.post('/users', async (req, res) => {
+    const { FirstName, MiddleName, LastName, Address, Email, PaymentMethod, IsAdmin } = req.body;
+
+    // 验证必填字段
+    if (!FirstName || !LastName || !Address || !Email || !PaymentMethod || !IsAdmin) {
+        return res.status(400).json({ success: false, message: 'Required fields are missing.' });
+    }
+
+    // 插入用户到数据库
+    try {
+        const [result] = await pool.query(
+            `INSERT INTO user (FirstName, MiddleName, LastName, Address, Email, PaymentMethod, IsAdmin)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [FirstName, MiddleName || null, LastName, Address, Email, PaymentMethod, IsAdmin]
+        );
+
+        res.status(201).json({ 
+            success: true, 
+            message: 'User added successfully.', 
+            userId: result.insertId // 返回新用户的 ID
+        });
+    } catch (error) {
+        console.error('Error adding user:', error);
+        res.status(500).json({ success: false, message: 'Failed to add user.' });
+    }
+});
 
 
 module.exports = router;
