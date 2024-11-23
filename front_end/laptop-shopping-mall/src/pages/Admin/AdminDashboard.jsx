@@ -254,7 +254,7 @@ const UserManagement = () => {
 					{ ...newUser, UserID: response.data.userId } // 添加新用户到列表
 				]);
 				setShowAddUserDialog(false); // 关闭添加用户对话框
-
+				setNewUser({ ...defaultNewUser }); // 清空表单数据
 			} else {
 				throw new Error(response.data.message || 'Failed to add user.');
 			}
@@ -277,8 +277,11 @@ const UserManagement = () => {
 	};
 
 	useEffect(() => {
+		if (showAddUserDialog) {
+            setError({}); // 清空错误信息
+        }
 		handleFetchUsers();
-	}, []);
+	}, [showAddUserDialog]);
 
 	return (
 		<div>
@@ -549,13 +552,14 @@ const UserManagement = () => {
 											onClick={() => {
 												setShowAddUserDialog(false);
 												setNewUser({ ...defaultNewUser });
+												setError({}); // 关闭时清空错误信息
 											}}
 										>
 											Cancel
 										</Button>
 										<Button onClick={() => {
 											handleAddUser(newUser);
-											setNewUser({ ...defaultNewUser });
+											//setNewUser({ ...defaultNewUser });
 										}}>
 											Add User
 										</Button>
@@ -630,13 +634,34 @@ const ProductManagement = () => {
 		setTempEditedProduct({ ...product }); // 将product数据复制到临时状态
 	};
 
-	const validateProduct = (product) => {
+	const validateImageOnServer = async (imagePath) => {
+		try {
+			const response = await fetch(`http://localhost:5005/images/${imagePath}`, { method: 'HEAD' });
+			if (response.ok) {
+				return true; // 图片存在
+			} else {
+				return false; // 图片不存在
+			}
+		} catch (error) {
+			console.error('检查图片时出错:', error);
+			return false; // 请求失败则认为图片不存在
+		}
+	};
+
+	const validateProduct = async (product) => {
 		const errors = {};
 		if (!product.ProductName) {
 			errors.ProductName = "Product name is required.";
 		}
 		if (!product.ProductType) {
 			errors.ProductType = "Product type is required.";
+		}
+
+		if (product.ProductImage) {
+			const imageExists = await validateImageOnServer(product.ProductImage);
+			if (!imageExists) {
+				errors.ProductImage = "Product image does not exist.";
+			}
 		}
 
 		if (product.ProductPrice === "") {
@@ -664,7 +689,7 @@ const ProductManagement = () => {
 		if (!tempEditedProduct) return;
 		// 验证产品数据
 
-		const validationError = validateProduct(tempEditedProduct);
+		const validationError = await validateProduct(tempEditedProduct);
 
 		if (Object.keys(validationError).length > 0) {
 			console.log("Validation failed:", validationError);
@@ -728,7 +753,7 @@ const ProductManagement = () => {
 	};
 
 	const handleAddProduct = async () => {
-		const validationError = validateProduct(newProduct); // 使用通用的校验函数
+		const validationError = await validateProduct(newProduct); // 使用通用的校验函数
 		if (Object.keys(validationError).length > 0) {
 			console.log("Validation failed:", validationError);
 
@@ -736,7 +761,8 @@ const ProductManagement = () => {
 			setError(validationError);
 
 			// 显示错误消息
-			setSnackbarMessage("Please correct the errors before submitting.");
+			//const errorMessages = Object.values(validationError).join(', ');
+			setSnackbarMessage('Please correct the errors before submitting.');
 			setSnackbarSeverity('error');
 			setOpenSnackbar(true); // 显示 Snackbar
 			return;
@@ -756,6 +782,7 @@ const ProductManagement = () => {
 					{ ...newProduct, ProductID: response.data.productId } // 添加新product到列表
 				]);
 				setShowAddProductDialog(false); // 关闭添加product对话框
+				setNewProduct({ ...defaultNewProduct }); // 清空表单数据
 
 			} else {
 				throw new Error(response.data.message || 'Failed to add product.');
@@ -779,8 +806,11 @@ const ProductManagement = () => {
 	};
 
 	useEffect(() => {
+		if (showAddProductDialog) {
+            setError({}); // 清空错误信息
+        }
 		handleFetchProducts();
-	}, []);
+	}, [showAddProductDialog]);
 
 
 	return (
@@ -984,6 +1014,8 @@ const ProductManagement = () => {
 												fullWidth
 												value={newProduct.ProductImage}
 												onChange={(e) => setNewProduct({ ...newProduct, ProductImage: e.target.value })}
+												error={!!error?.ProductImage}
+												helperText={error?.ProductImage || ''}
 												margin="dense"
 											/>
 											<TextField
@@ -1011,14 +1043,15 @@ const ProductManagement = () => {
 											<Button onClick={() => {
 												setShowAddProductDialog(false);
 												setNewProduct({ ...defaultNewProduct });
+												setError({});
 											}}
 											>
 												Cancel
 											</Button>
 
-											<Button onClick={() => {
-												handleAddProduct(newProduct);
-												setNewProduct({ ...defaultNewProduct });
+											<Button onClick={ async () => {
+												await handleAddProduct(newProduct);
+												//setNewProduct({ ...defaultNewProduct });
 											}}
 											>
 												Add Product
