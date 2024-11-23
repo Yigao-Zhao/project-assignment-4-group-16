@@ -601,8 +601,8 @@ const ProductManagement = () => {
 
 	const [showAddProductDialog, setShowAddProductDialog] = useState(false); // 控制 Add User 弹窗显示
 
-	const	defaultNewProduct = {
-		
+	const defaultNewProduct = {
+
 		ProductName: '',
 		ProductType: '',
 		ProductSpecifications: '',
@@ -612,7 +612,7 @@ const ProductManagement = () => {
 	};
 
 	const [newProduct, setNewProduct] = useState(defaultNewProduct); // 新产品的默认值
-		
+
 
 	const handleProductCancel = () => {
 		// 取消编辑时，恢复原始数据
@@ -854,14 +854,27 @@ const ProductManagement = () => {
 								</TableCell>
 								<TableCell>
 									{editProductId === product.ProductID ? (
-										<TextField
-											value={tempEditedProduct?.ProductImage || ''}
-											onChange={(e) =>
-												handleTempProductEdit("ProductImage", e.target.value)
-											}
-										/>
+										<div style={{ display: 'flex', alignItems: 'center' }}>
+											{/* 显示当前图片 */}
+											<img
+												src={tempEditedProduct?.ProductImage ? `/image/${tempEditedProduct.ProductImage}` : ''}
+												alt={product.ProductName}
+												style={{ width: '80px', height: '80px', objectFit: 'cover', marginRight: '10px' }}
+											/>
+											{/* 提供输入框修改图片路径 */}
+											<TextField
+												value={tempEditedProduct?.ProductImage || ''}
+												onChange={(e) => handleTempProductEdit("ProductImage", e.target.value)}
+												placeholder="Enter image URL"
+												fullWidth
+											/>
+										</div>
 									) : (
-										product.ProductImage
+										<img
+											src={product.ProductImage ? `/image/${product.ProductImage}` : ''}
+											alt={product.ProductName}
+											style={{ width: '80px', height: '80px', objectFit: 'cover' }}
+										/>
 									)}
 								</TableCell>
 								<TableCell>
@@ -934,7 +947,7 @@ const ProductManagement = () => {
 									<Dialog open={showAddProductDialog}
 										onClose={() => {
 											setShowAddProductDialog(false);
-											setNewProduct({	...defaultNewProduct }); // 重置表单数据
+											setNewProduct({ ...defaultNewProduct }); // 重置表单数据
 										}}
 									>
 										<DialogTitle>Add New Product</DialogTitle>
