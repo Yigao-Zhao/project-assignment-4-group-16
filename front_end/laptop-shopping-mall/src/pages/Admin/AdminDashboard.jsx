@@ -54,14 +54,18 @@ const UserManagement = () => {
 	const [openConfirmDialog, setOpenConfirmDialog] = useState(false); // 控制确认删除对话框
 	const [userToDelete, setUserToDelete] = useState(null); // 存储待删除的userID
 	const [showAddUserDialog, setShowAddUserDialog] = useState(false); // 控制 Add User 弹窗显示
-	const [newUser, setNewUser] = useState({
+
+	const defaultNewUser = {
 		FirstName: '',
+		MiddleName: '',
 		LastName: '',
 		Address: '',
 		Email: '',
-		PaymentMethod: 'Credit Card', // 默认值为信用卡
-		IsAdmin: 'N', // 默认值为非管理员
-	});
+		PaymentMethod: 'Credit Card', // Default to Credit Card
+		IsAdmin: 'N', // Default to non-admin
+	};
+
+	const [newUser, setNewUser] = useState({ ...defaultNewUser }); // 新用户的默认值
 
 	// 编辑状态控制
 	const [editUserId, setEditUserId] = useState(null);
@@ -449,7 +453,12 @@ const UserManagement = () => {
 									</DialogActions>
 								</Dialog>
 
-								<Dialog open={showAddUserDialog} onClose={() => setShowAddUserDialog(false)}>
+								<Dialog open={showAddUserDialog}
+									onClose={() => {
+										setShowAddUserDialog(false);
+										setNewUser({ ...defaultNewUser }); // 重置表单数据
+									}}
+								>
 									<DialogTitle>Add New User</DialogTitle>
 									<DialogContent>
 										<TextField
@@ -466,7 +475,8 @@ const UserManagement = () => {
 											label="Middle Name"
 											fullWidth
 											value={newUser.MiddleName}
-											onChange={(e) => setNewUser({ ...newUser, FirstName: e.target.value })}
+											onChange={(e) => setNewUser({ ...newUser, MiddleName: e.target.value })}
+											margin="dense"
 										/>
 										<TextField
 											label="Last Name"
@@ -529,14 +539,26 @@ const UserManagement = () => {
 												helperText={error?.IsAdmin || ''}
 												margin="dense"
 											>
-												<MenuItem value="Y">Yes</MenuItem>
-												<MenuItem value="N">No</MenuItem>
+												<MenuItem value="Y">Y</MenuItem>
+												<MenuItem value="N">N</MenuItem>
 											</Select>
 										</FormControl>
 									</DialogContent>
 									<DialogActions>
-										<Button onClick={() => setShowAddUserDialog(false)}>Cancel</Button>
-										<Button onClick={() => handleAddUser(newUser)}>Add User</Button>
+										<Button
+											onClick={() => {
+												setShowAddUserDialog(false);
+												setNewUser({ ...defaultNewUser });
+											}}
+										>
+											Cancel
+										</Button>
+										<Button onClick={() => {
+											handleAddUser(newUser);
+											setNewUser({ ...defaultNewUser });
+										}}>
+											Add User
+										</Button>
 									</DialogActions>
 								</Dialog>
 							</TableRow>
@@ -577,17 +599,20 @@ const ProductManagement = () => {
 	const [productToDelete, setProductToDelete] = useState(null); // 存储待删除的产品ID
 	const [tempEditedProduct, setTempEditedProduct] = useState(null); // 临时保存编辑的产品数据
 
-	//const handleProductEdit = (id, field, value) => {
-	//	setProducts((prev) =>
-	//		prev.map((product) =>
-	//			product.ProductID === id ? { ...product, [field]: value } : product
-	//		)
-	//	);
-	//	setTempEditedProduct(prev => ({
-	//		...prev,
-	//		[field]: value,
-	//	}));
-	//};
+	const [showAddProductDialog, setShowAddProductDialog] = useState(false); // 控制 Add User 弹窗显示
+
+	const	defaultNewProduct = {
+		
+		ProductName: '',
+		ProductType: '',
+		ProductSpecifications: '',
+		ProductImage: '',
+		ProductPrice: '',
+		ProductStock: '',
+	};
+
+	const [newProduct, setNewProduct] = useState(defaultNewProduct); // 新产品的默认值
+		
 
 	const handleProductCancel = () => {
 		// 取消编辑时，恢复原始数据
@@ -615,12 +640,12 @@ const ProductManagement = () => {
 		}
 
 		if (product.ProductPrice === "") {
-			errors.ProductPrice =  "Product price is required.";
+			errors.ProductPrice = "Product price is required.";
 		}
 
 		const price = Number(product.ProductPrice);
 		if (isNaN(price) || price <= 0) {
-			errors.ProductPrice =  "Product price must be a number greater than zero.";
+			errors.ProductPrice = "Product price must be a number greater than zero.";
 		}
 
 		if (product.ProductStock === "") {
@@ -630,7 +655,7 @@ const ProductManagement = () => {
 		const stock = Number(product.ProductStock);
 
 		if (isNaN(stock) || stock <= 0 || !Number.isInteger(stock)) {
-			errors.ProductStock =  "Product stock must be a positive integer.";
+			errors.ProductStock = "Product stock must be a positive integer.";
 		}
 		return errors; // 返回 null 表示没有错误
 	};
@@ -650,18 +675,6 @@ const ProductManagement = () => {
 			setOpenSnackbar(true); // 显示 Snackbar
 			return;
 		}
-
-
-
-		
-		//if (validationError) {
-		//	console.log("Validation failed:", validationError);
-		//	setError(validationError);
-		//	setSnackbarMessage(validationError);  // 设置错误消息
-		//	setSnackbarSeverity('error');  // 设置错误类型
-		//	setOpenSnackbar(true); // 显示 Snackbar
-		//	return;
-	//	}
 
 		try {
 			// 调用后端 API 更新产品
@@ -714,6 +727,47 @@ const ProductManagement = () => {
 		setOpenConfirmDialog(true); // 打开删除确认对话框
 	};
 
+	const handleAddProduct = async () => {
+		const validationError = validateProduct(newProduct); // 使用通用的校验函数
+		if (Object.keys(validationError).length > 0) {
+			console.log("Validation failed:", validationError);
+
+			// 更新错误信息状态
+			setError(validationError);
+
+			// 显示错误消息
+			setSnackbarMessage("Please correct the errors before submitting.");
+			setSnackbarSeverity('error');
+			setOpenSnackbar(true); // 显示 Snackbar
+			return;
+		}
+
+
+		try {
+			const response = await axios.post('http://localhost:5005/api/product/products', newProduct);
+			if (response.data.success) {
+				setSnackbarMessage('Product added successfully!');
+				setSnackbarSeverity('success');
+				setOpenSnackbar(true);
+
+				// 更新product列表
+				setProducts((prevProducts) => [
+					...prevProducts,
+					{ ...newProduct, ProductID: response.data.productId } // 添加新product到列表
+				]);
+				setShowAddProductDialog(false); // 关闭添加product对话框
+
+			} else {
+				throw new Error(response.data.message || 'Failed to add product.');
+			}
+		} catch (error) {
+			console.error('Error adding product:', error);
+			setSnackbarMessage('Failed to add product.');
+			setSnackbarSeverity('error');
+			setOpenSnackbar(true);
+		}
+	};
+
 	const handleFetchProducts = async () => {
 		setError('');
 		try {
@@ -731,6 +785,19 @@ const ProductManagement = () => {
 
 	return (
 		<div>
+			{/* Header Section */}
+			<Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+				<Button
+					variant="contained"
+					color="primary"
+					onClick={() => setShowAddProductDialog(true)}
+				>
+					Add Product
+				</Button>
+			</Box>
+
+
+
 			<TableContainer component={Paper}>
 				<Table>
 					<TableHead>
@@ -864,6 +931,89 @@ const ProductManagement = () => {
 										</DialogActions>
 									</Dialog>
 
+									<Dialog open={showAddProductDialog}
+										onClose={() => {
+											setShowAddProductDialog(false);
+											setNewProduct({	...defaultNewProduct }); // 重置表单数据
+										}}
+									>
+										<DialogTitle>Add New Product</DialogTitle>
+										<DialogContent>
+											<TextField
+												label="Product Name"
+												fullWidth
+												value={newProduct.ProductName}
+												onChange={(e) => setNewProduct({ ...newProduct, ProductName: e.target.value })}
+												required
+												error={!!error?.ProductName}
+												helperText={error?.ProductName || ''}
+												margin="dense"
+											/>
+											<TextField
+												label="Product Type"
+												fullWidth
+												value={newProduct.ProductType}
+												onChange={(e) => setNewProduct({ ...newProduct, ProductType: e.target.value })}
+												required
+												error={!!error?.ProductType}
+												helperText={error?.ProductType || ''}
+												margin="dense"
+											/>
+											<TextField
+												label="Product Specifications"
+												fullWidth
+												value={newProduct.ProductSpecifications}
+												onChange={(e) => setNewProduct({ ...newProduct, ProductSpecifications: e.target.value })}
+												margin="dense"
+											/>
+											<TextField
+												label="Product Image"
+												fullWidth
+												value={newProduct.ProductImage}
+												onChange={(e) => setNewProduct({ ...newProduct, ProductImage: e.target.value })}
+												margin="dense"
+											/>
+											<TextField
+												label="Product Price"
+												fullWidth
+												value={newProduct.ProductPrice}
+												onChange={(e) => setNewProduct({ ...newProduct, ProductPrice: e.target.value })}
+												required
+												error={!!error?.ProductPrice}
+												helperText={error?.ProductPrice || ''}
+												margin="dense"
+											/>
+											<TextField
+												label="Product Stock"
+												fullWidth
+												value={newProduct.ProductStock}
+												onChange={(e) => setNewProduct({ ...newProduct, ProductStock: e.target.value })}
+												required
+												error={!!error?.ProductStock}
+												helperText={error?.ProductStock || ''}
+												margin="dense"
+											/>
+										</DialogContent>
+										<DialogActions>
+											<Button onClick={() => {
+												setShowAddProductDialog(false);
+												setNewProduct({ ...defaultNewProduct });
+											}}
+											>
+												Cancel
+											</Button>
+
+											<Button onClick={() => {
+												handleAddProduct(newProduct);
+												setNewProduct({ ...defaultNewProduct });
+											}}
+											>
+												Add Product
+											</Button>
+										</DialogActions>
+									</Dialog>
+
+
 								</TableCell>
 							</TableRow>
 						))}
@@ -892,9 +1042,7 @@ const ProductManagement = () => {
 
 const AdminDashboard = () => {
 	const [selectedSection, setSelectedSection] = useState('User Management');
-	const [openSnackbar, setOpenSnackbar] = useState(false); // Handle Snackbar state
-	const [snackbarMessage, setSnackbarMessage] = useState(''); // 显示的提示消息
-	const [snackbarSeverity, setSnackbarSeverity] = useState(''); // 控制 Snackbar 类型（成功或错误）
+
 	return (
 		<Box sx={{ display: "flex", height: "100vh" }}>
 			{/* 侧边栏导航 */}
