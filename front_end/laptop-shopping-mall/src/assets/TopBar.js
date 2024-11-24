@@ -27,11 +27,14 @@ const TopBar = () => {
 
                 <Box>
                     {!isAuthenticated ? (
-                        <>
-                            <Button color="inherit" onClick={() => navigate('/login')}>
-                                Login
-                            </Button>
-                        </>
+                    <>
+                        <Button color="inherit" onClick={() => navigate('/login')}>
+                            Login
+                        </Button>
+                        <Button color="inherit" onClick={() => navigate('/Registration')}>
+                            Register
+                        </Button>
+                    </>
                     ) : (
                         <>
                             <Button

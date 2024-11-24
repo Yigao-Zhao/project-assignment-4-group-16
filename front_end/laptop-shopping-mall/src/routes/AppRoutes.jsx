@@ -8,6 +8,7 @@ import ProductList from '../pages/ProductList/ProductDashboard';
 import Payment from '../pages/Payment/Payment';
 import TopBar from '../assets/TopBar';
 import ProductDetail from '../pages/ProductDetail/productDetail';
+import Registration from '../pages/Registration/Registration';
 
 const AppRoutes = () => (
     <Router>
@@ -17,6 +18,7 @@ const AppRoutes = () => (
                 <Route path="/" element={<ProductList />} />
                 <Route path="/login" element={<Login />} />
 				<Route path="/productDetail" element={<ProductDetail />} />
+                <Route path="/registration" element={<Registration />} />
                 <Route
                     path="/admin"
                     element={

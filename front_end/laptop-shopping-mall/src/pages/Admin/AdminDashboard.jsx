@@ -61,6 +61,7 @@ const UserManagement = () => {
 		LastName: '',
 		Address: '',
 		Email: '',
+		MyPassword: '',
 		PaymentMethod: 'Credit Card', // Default to Credit Card
 		IsAdmin: 'N', // Default to non-admin
 	};
@@ -73,8 +74,11 @@ const UserManagement = () => {
 	const [tempEditedUser, setTempEditedUser] = useState(null);
 
 	const handleEditClick = (user) => {
-		setEditUserId(user.UserID);
-		setTempEditedUser({ ...user }); // 将用户数据复制到临时状态
+		setTempEditedUser({
+			...user, // 传入当前用户的所有数据
+			OriginalEmail: user.Email // 保存用户原始的邮箱
+		});
+		setEditUserId(user.UserID); // 设置正在编辑的用户ID
 	};
 
 	const handleCancelClick = () => {
@@ -116,6 +120,10 @@ const UserManagement = () => {
 			errors.PaymentMethod = "Payment method is required.";
 		}
 
+		// 支付方式校验
+		if (!user.MyPassword) {
+			errors.MyPassword = "Password is required.";
+		}
 		// 管理员标志校验
 		if (!user.IsAdmin) {
 			errors.IsAdmin = "IsAdmin is required.";
@@ -150,13 +158,15 @@ const UserManagement = () => {
 			return;
 		}
 
-		// 在保存之前先校验邮箱是否唯一
-		const emailExists = await checkEmailExists(newUser.Email);
-		if (emailExists) {
-			setSnackbarMessage('Email already exists.');
-			setSnackbarSeverity('error');
-			setOpenSnackbar(true);
-			return;
+		// 检查邮箱是否唯一，只在邮箱被修改时执行
+		if (tempEditedUser.Email !== tempEditedUser.OriginalEmail) { // 需要在tempEditedUser中记录原始邮箱
+			const emailExists = await checkEmailExists(tempEditedUser.Email);
+			if (emailExists) {
+				setSnackbarMessage('Email already exists.');
+				setSnackbarSeverity('error');
+				setOpenSnackbar(true);
+				return;
+			}
 		}
 
 		try {
@@ -278,8 +288,8 @@ const UserManagement = () => {
 
 	useEffect(() => {
 		if (showAddUserDialog) {
-            setError({}); // 清空错误信息
-        }
+			setError({}); // 清空错误信息
+		}
 		handleFetchUsers();
 	}, [showAddUserDialog]);
 
@@ -309,6 +319,7 @@ const UserManagement = () => {
 							<TableCell>Email <span style={{ color: 'red' }}>*</span></TableCell>
 							<TableCell>Payment Method <span style={{ color: 'red' }}>*</span></TableCell>
 							<TableCell>Is Admin <span style={{ color: 'red' }}>*</span></TableCell>
+							<TableCell>Password <span style={{ color: 'red' }}>*</span></TableCell>
 							<TableCell>Actions</TableCell>
 						</TableRow>
 					</TableHead>
@@ -414,6 +425,19 @@ const UserManagement = () => {
 								</TableCell>
 								<TableCell>
 									{editUserId === user.UserID ? (
+										<TextField
+											value={tempEditedUser?.MyPassword || ''}
+											onChange={(e) =>
+												handleTempUserEdit('MyPassword', e.target.value)
+											}
+										/>
+									) : (
+										user.MyPassword
+									)}
+								</TableCell>
+
+								<TableCell>
+									{editUserId === user.UserID ? (
 										<Box display="flex" alignItems="center">
 											<IconButton onClick={handleUserSave}>
 												<Save />
@@ -460,7 +484,8 @@ const UserManagement = () => {
 									onClose={() => {
 										setShowAddUserDialog(false);
 										setNewUser({ ...defaultNewUser }); // 重置表单数据
-									}}
+										setError({}); // 清空错误信息
+									}}	
 								>
 									<DialogTitle>Add New User</DialogTitle>
 									<DialogContent>
@@ -546,6 +571,17 @@ const UserManagement = () => {
 												<MenuItem value="N">N</MenuItem>
 											</Select>
 										</FormControl>
+
+										<TextField
+											label="Password"
+											fullWidth
+											value={newUser.MyPassword}
+											onChange={(e) => setNewUser({ ...newUser, MyPassword: e.target.value })}
+											required
+											error={!!error?.MyPassword}
+											helperText={error?.MyPassword || ''}
+											margin="dense"
+										/>
 									</DialogContent>
 									<DialogActions>
 										<Button
@@ -807,8 +843,8 @@ const ProductManagement = () => {
 
 	useEffect(() => {
 		if (showAddProductDialog) {
-            setError({}); // 清空错误信息
-        }
+			setError({}); // 清空错误信息
+		}
 		handleFetchProducts();
 	}, [showAddProductDialog]);
 
@@ -1049,7 +1085,7 @@ const ProductManagement = () => {
 												Cancel
 											</Button>
 
-											<Button onClick={ async () => {
+											<Button onClick={async () => {
 												await handleAddProduct(newProduct);
 												//setNewProduct({ ...defaultNewProduct });
 											}}

@@ -17,6 +17,7 @@ router.put('/users/:id', async (req, res) => {
         Email,
         PaymentMethod,
         IsAdmin,
+        MyPassword
     } = req.body;
 
     try {
@@ -30,9 +31,10 @@ router.put('/users/:id', async (req, res) => {
                  Address = ?, 
                  Email = ?, 
                  PaymentMethod = ?, 
-                 IsAdmin = ?
+                 IsAdmin = ?,
+                 MyPassword = ?
              WHERE UserID = ?`,
-            [FirstName, MiddleName, LastName, Address, Email, PaymentMethod, IsAdmin, userId]
+            [FirstName, MiddleName, LastName, Address, Email, PaymentMethod, IsAdmin, MyPassword, userId]
         );
 
         if (result.affectedRows === 0) {
@@ -69,10 +71,10 @@ router.delete('/users/:id', async (req, res) => {
 
 // 添加新用户
 router.post('/users', async (req, res) => {
-    const { FirstName, MiddleName, LastName, Address, Email, PaymentMethod, IsAdmin } = req.body;
+    const { FirstName, MiddleName, LastName, Address, Email, PaymentMethod, IsAdmin, MyPassword } = req.body;
 
     // 验证必填字段
-    if (!FirstName || !LastName || !Address || !Email || !PaymentMethod || !IsAdmin) {
+    if (!FirstName || !LastName || !Address || !Email || !PaymentMethod || !IsAdmin || !MyPassword ){
         return res.status(400).json({ success: false, message: 'Required fields are missing.' });
     }
 
@@ -97,8 +99,8 @@ router.post('/users', async (req, res) => {
         }
 
         const [result] = await pool.query(
-            `INSERT INTO user (FirstName, MiddleName, LastName, Address, Email, PaymentMethod, IsAdmin)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO user (FirstName, MiddleName, LastName, Address, Email, PaymentMethod, IsAdmin, MyPassword)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 FirstName.trim(),
                 MiddleName ? MiddleName.trim() : null,
@@ -106,7 +108,8 @@ router.post('/users', async (req, res) => {
                 Address.trim(),
                 Email.trim(),
                 PaymentMethod.trim(),
-                IsAdmin
+                IsAdmin,
+                MyPassword.trim()
             ]
         );
 
