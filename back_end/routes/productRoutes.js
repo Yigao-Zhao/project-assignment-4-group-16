@@ -4,7 +4,7 @@ const { verifyToken, isAdmin } = require('../middlewares/authMiddleware');
 const pool = require('../config/mysql'); // 引入数据库连接池
 const router = express.Router();
 
-router.get('/products', verifyToken, isAdmin, ProductController.getAllProducts);
+router.get('/products', ProductController.getAllProducts);
 
 router.put('/products/:id', async (req, res) => {
     const productId = req.params.id;
