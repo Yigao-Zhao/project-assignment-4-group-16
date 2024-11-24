@@ -485,7 +485,7 @@ const UserManagement = () => {
 										setShowAddUserDialog(false);
 										setNewUser({ ...defaultNewUser }); // 重置表单数据
 										setError({}); // 清空错误信息
-									}}	
+									}}
 								>
 									<DialogTitle>Add New User</DialogTitle>
 									<DialogContent>
