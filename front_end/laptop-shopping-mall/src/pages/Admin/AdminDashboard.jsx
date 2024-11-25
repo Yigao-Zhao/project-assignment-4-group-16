@@ -841,16 +841,22 @@ const ProductManagement = () => {
 	const handleFetchProducts = async () => {
 		setError('');
 		try {
-			const productList = await fetchProducts();
-			setProducts(productList);
+			const response = await fetchProducts();
+			console.log('Response from fetchProducts:', response);
+			if (response && Array.isArray(response.products)) {
+				setProducts(response.products); // 假设返回的对象中包含 products 数组
+			} else {
+				throw new Error('Unexpected response format');
+			}
 		} catch (err) {
+			console.error('Failed to fetch data:', error.message);
 			setError(err.message);
 		}
 	};
 
 	useEffect(() => {
 		if (showAddProductDialog) {
-			setError({}); // 清空错误信息
+			setError(''); // 清空错误信息
 		}
 		handleFetchProducts();
 	}, [showAddProductDialog]);

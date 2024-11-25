@@ -70,7 +70,7 @@ const ProductDashboard = () => {
 
                 // Fetch products from the server
                 const response = await axios.get('http://localhost:5005/api/product/products');
-                setProducts(response.data); // 设置产品数据
+                setProducts(response.data.products); // 设置产品数据
             } catch (error) {
                 console.error('Failed to fetch data:', error.message);
             } finally {
