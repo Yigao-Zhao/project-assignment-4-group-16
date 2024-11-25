@@ -196,20 +196,26 @@ const UserManagement = () => {
 		}
 	};
 
+	const handleConfirmDelete = (userId) => {
+		setUserToDelete(userId); // 设置待删除的userID
+		setOpenConfirmDialog(true); // 打开删除确认对话框
+	};
+
 
 	const handleDeleteUser = async (id) => {
 		try {
-			const response = await axios.delete(`http://localhost:5005/api/user/users/${userToDelete}`);
-
+			console.log('Deleting user with ID:', id);
+			const response = await axios.delete(`http://localhost:5005/api/user/users/${id}`);
+			console.log('Response from deleteUser:', response.data);
 			if (response.data.success) {
-				setUsers((prev) => prev.filter((user) => user.UserID !== userToDelete));
+				setUsers((prev) => prev.filter((user) => user.UserID !== id));
 				setOpenConfirmDialog(false); // 关闭确认对话框
 				setSnackbarMessage('User deleted successfully!');
 				setSnackbarSeverity('success');
 				setOpenSnackbar(true);
 
 				// 更新本地状态
-				setUsers((prev) => prev.filter((user) => user.UserID !== id));
+				//setUsers((prev) => prev.filter((user) => user.UserID !== id));
 			} else {
 				throw new Error(response.data.message || 'Failed to delete user');
 			}
@@ -221,10 +227,6 @@ const UserManagement = () => {
 		}
 	};
 
-	const handleConfirmDelete = (userId) => {
-		setUserToDelete(userId); // 设置待删除的userID
-		setOpenConfirmDialog(true); // 打开删除确认对话框
-	};
 
 	const handleAddUser = async () => {
 		const validationError = validateUser(newUser); // 使用通用的校验函数
@@ -279,16 +281,21 @@ const UserManagement = () => {
 	const handleFetchUsers = async () => {
 		setError('');
 		try {
-			const userList = await fetchUsers();
-			setUsers(userList);
+			const response = await fetchUsers();
+			if (response && Array.isArray(response.users)) {
+				setUsers(response.users); // 假设返回的对象中包含 users 数组
+			} else {
+				throw new Error('Unexpected response format');
+			}
 		} catch (err) {
-			setError(err.message);
+			console.error('Error fetching users:', err);
+			setError(err.message || 'Failed to fetch users');
 		}
 	};
 
 	useEffect(() => {
 		if (showAddUserDialog) {
-			setError({}); // 清空错误信息
+			setError(''); // 清空错误信息
 		}
 		handleFetchUsers();
 	}, [showAddUserDialog]);
@@ -471,7 +478,7 @@ const UserManagement = () => {
 											Cancel
 										</Button>
 										<Button
-											onClick={handleDeleteUser}
+											onClick={() => handleDeleteUser(user.UserID)} // 直接传递 userId
 											color="secondary"
 											variant="contained"
 										>
