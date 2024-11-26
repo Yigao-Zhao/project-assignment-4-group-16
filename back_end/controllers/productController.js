@@ -80,7 +80,27 @@ const ProductController = {
             console.error('Error adding product:', err);
             res.status(500).json({ success: false, message: err.message }); // 捕获错误并返回 500 错误码
         }
-    }
+    },
+
+
+    getProductById: async (req, res) => {
+        try {
+          const { id } = req.params; // 获取动态参数 :id
+          console.log("Fetching product with ID:", id); // 调试日志
+      
+          const product = await ProductService.findProductById(id);
+      
+          if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+          }
+      
+          res.status(200).json({ success: true, product });
+        } catch (error) {
+          console.error("Error fetching product:", error.message);
+          res.status(500).json({ success: false, message: "Internal server error" });
+        }
+      }
+      
 
 };
 

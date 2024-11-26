@@ -17,18 +17,9 @@ const ProductService = {
     },
 
     // 获取单个产品
-    getProductById: async (productId) => {
-        try {
-            const product = await Product.getProductById(productId);
-            if (!product) {
-                throw new Error('Product not found');
-            }
-            return { success: true, product };
-        } catch (err) {
-            console.error('Error in ProductService.getProductById:', err.message);
-            throw new Error('Failed to retrieve product');
-        }
-    },
+    getProductById: async (id) => {
+        return await ProductModel.findProductById(id); // 调用模型层方法
+      },
 
     // 更新产品
     updateProduct: async (productId, productData) => {

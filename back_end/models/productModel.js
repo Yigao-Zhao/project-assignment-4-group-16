@@ -9,12 +9,13 @@ const Product = {
         return rows;
     },
 
-    // 根据 ID 获取单个产品
+    // 根据 ID 获取产品信息
     getProductById: async (productId) => {
-        const query = 'SELECT * FROM product WHERE ProductID = ?';
-        const [rows] = await db.query(query, [productId]);
-        return rows[0]; // 如果没有找到，返回 undefined
+        const query = 'SELECT ProductID, ProductName, ProductType, ProductSpecifications, ProductImage, ProductPrice, ProductStock FROM product WHERE ProductID = ?'; 
+        const [result] = await db.query(query, [productId]); // 使用数据库连接池查询
+        return result; 
     },
+
 
     // 更新产品信息
     updateProduct: async (productId, productData) => {

@@ -15,4 +15,8 @@ router.delete('/products/:id', ProductController.deleteProduct);
 // 添加新产品
 router.post('/products', ProductController.addProduct);
 
+//特定ID
+router.get('/products/:id', ProductController.getProductById);
+
+
 module.exports = router;
