@@ -38,30 +38,6 @@ const ProductDashboard = () => {
 
     const [isLoading, setIsLoading] = useState(true); // 加载状态
     const [products, setProducts] = useState([]); // 产品列表
-    // Mock product list
-    // const products = [
-    //    {
-    //       id: 1,
-    //      title: 'Laptop 1',
-    //    description: 'Description of laptop 1',
-    //  image: 'https://cdn-dynmedia-1.microsoft.com/is/image/microsoftcorp/Highlight-Surface-Laptop-Go-3-001-3000x1682:VP2-859x540',
-    //  price: 100,
-    // },
-    // {
-    //   id: 2,
-    //  title: 'Laptop 2',
-    //   description: 'Description of laptop 2',
-    //   image: 'https://cdn-dynmedia-1.microsoft.com/is/image/microsoftcorp/Highlight-Surface-Laptop-Go-3-001-3000x1682:VP2-859x540',
-    //  price: 200,
-    // },
-    // {
-    //    id: 3,
-    //   title: 'Laptop 3',
-    //  description: 'Description of laptop 3',
-    //  image: 'https://cdn-dynmedia-1.microsoft.com/is/image/microsoftcorp/Highlight-Surface-Laptop-Go-3-001-3000x1682:VP2-859x540',
-    //  price: 300,
-    //   },
-    //];
 
     useEffect(() => {
         const fetchData = async () => {

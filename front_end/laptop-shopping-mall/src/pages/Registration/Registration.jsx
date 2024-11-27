@@ -15,6 +15,10 @@ import {
     FormControl,
     InputLabel,
     FormHelperText,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import axios from "axios";
@@ -38,6 +42,10 @@ function RegisterPage() {
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+    const [dialogOpen, setDialogOpen] = useState(false);  // 控制弹窗显示
+    const [dialogMessage, setDialogMessage] = useState("");  // 弹窗消息
+    const [dialogSeverity, setDialogSeverity] = useState("success"); // 弹窗的类型（成功或错误）
 
     const navigate = useNavigate();
 
@@ -122,9 +130,15 @@ function RegisterPage() {
         try {
             const response = await axios.post("http://localhost:5005/api/user/users", submitData);
             if (response.data.success) {
-                setSnackbarMessage("User added successfully!");
-                setSnackbarSeverity("success");
-                setOpenSnackbar(true);
+                // 注册成功时只显示 Dialog
+                setDialogMessage("User registered successfully!");
+                setDialogSeverity("success");
+                setDialogOpen(true);
+
+                setTimeout(() => {
+                    navigate("/login");
+                }, 3000);
+
                 setFormData({
                     FirstName: "",
                     MiddleName: "",
@@ -137,9 +151,6 @@ function RegisterPage() {
                     IsAdmin: "N",
                 });
 
-
-
-                navigate("/"); // Redirect to home page
             } else {
                 throw new Error(response.data.message || "Failed to add user.");
             }
@@ -253,6 +264,22 @@ function RegisterPage() {
                     {snackbarMessage}
                 </Alert>
             </Snackbar>
+
+            {/* Dialog for successful registration */}
+            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+                <DialogTitle>{dialogSeverity === "success" ? "Success" : "Error"}</DialogTitle>
+                <DialogContent>
+                    <Alert severity={dialogSeverity} sx={{ width: "100%" }}>
+                        {dialogMessage}
+                    </Alert>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDialogOpen(false)} color="primary">
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
         </Container>
     );
 }

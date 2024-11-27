@@ -74,15 +74,30 @@ const Login = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                    <Button
-                        type="submit"
-                        fullWidth
-                        variant="contained"
-                        color="primary"
-                        sx={{ mt: 3, mb: 2 }}
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between', // 按钮两端对齐
+                            mt: 2,
+                        }}
                     >
-                        Sign In
-                    </Button>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            sx={{ flex: 1, mr: 1 }} // 两个按钮等宽，右侧留间距
+                        >
+                            Sign In
+                        </Button>
+                        <Button
+                            onClick={() => navigate('/Registration')}
+                            variant="outlined"
+                            color="secondary"
+                            sx={{ flex: 1 }} // 两个按钮等宽
+                        >
+                            Register
+                        </Button>
+                    </Box>
                 </Box>
             </Box>
         </Container>
