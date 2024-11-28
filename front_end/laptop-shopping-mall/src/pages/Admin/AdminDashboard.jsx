@@ -30,9 +30,15 @@ import {
 	DialogActions,
 	DialogContent,
 	DialogTitle,
-	Alert
+	Alert,
+	Grid,
+	AppBar,
+	CssBaseline
 } from "@mui/material";
 import { Edit, Save, Add, Delete, Cancel } from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { Menu } from "@mui/icons-material";
 
 const paymentMethods = ['Credit Card', 'PayPal', 'Bank Transfer'];
 
@@ -301,7 +307,7 @@ const UserManagement = () => {
 	}, [showAddUserDialog]);
 
 	return (
-		<div>
+		<Box>
 			{/* Header Section */}
 			<Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
 				<Button
@@ -627,7 +633,7 @@ const UserManagement = () => {
 					{snackbarMessage}  {/* 显示提示消息 */}
 				</Alert>
 			</Snackbar>
-		</div>
+		</Box>
 
 	);
 }
@@ -699,6 +705,8 @@ const ProductManagement = () => {
 		if (!product.ProductType) {
 			errors.ProductType = "Product type is required.";
 		}
+
+		
 
 		if (product.ProductPrice === "") {
 			errors.ProductPrice = "Product price is required.";
@@ -846,62 +854,54 @@ const ProductManagement = () => {
 			setError(err.message);
 		}
 	};
-
+	
 	const handleImageUpload = async (e) => {
-		const file = e.target.files[0];
-		try {
-			const compressedBase64 = await compressImage(file, 0.2);
-			if (showAddProductDialog) {
-				// 如果是新建操作，更新 newProduct
-				setNewProduct((prev) => ({
-					...prev,
-					ProductImage: compressedBase64,
-				}));
-			} else if (editProductId) {
-				// 如果是编辑操作，更新 tempEditedProduct
-				handleTempProductEdit('ProductImage', compressedBase64);
-			}
-		} catch (error) {
-			console.error('Error compressing image:', error);
-		}
+	    const file = e.target.files[0];
+	    try {
+	        const compressedBase64 = await compressImage(file, 0.2);
+			handleTempProductEdit('ProductImage', compressedBase64);
+			
+	    } catch (error) {
+	        console.error('Error compressing image:', error);
+	    }
 	};
 	const compressImage = (file, quality = 0.7) => {
-		return new Promise((resolve, reject) => {
-			const reader = new FileReader();
-			reader.onload = (event) => {
-				const img = new Image();
-				img.onload = () => {
-					const canvas = document.createElement('canvas');
-					const ctx = canvas.getContext('2d');
-
-					// 设置最大宽度和高度，保持图片比例
-					const maxWidth = 800;
-					const maxHeight = 800;
-					let width = img.width;
-					let height = img.height;
-
-					if (width > height && width > maxWidth) {
-						height = (height * maxWidth) / width;
-						width = maxWidth;
-					} else if (height > width && height > maxHeight) {
-						width = (width * maxHeight) / height;
-						height = maxHeight;
-					}
-
-					canvas.width = width;
-					canvas.height = height;
-					ctx.drawImage(img, 0, 0, width, height);
-
-					// 将图片转换为 Base64 数据
-					const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
-					resolve(compressedBase64);
-				};
-				img.onerror = (error) => reject(error);
-				img.src = event.target.result;
-			};
-			reader.onerror = (error) => reject(error);
-			reader.readAsDataURL(file);
-		});
+	    return new Promise((resolve, reject) => {
+	        const reader = new FileReader();
+	        reader.onload = (event) => {
+	            const img = new Image();
+	            img.onload = () => {
+	                const canvas = document.createElement('canvas');
+	                const ctx = canvas.getContext('2d');
+	
+	                // 设置最大宽度和高度，保持图片比例
+	                const maxWidth = 800;
+	                const maxHeight = 800;
+	                let width = img.width;
+	                let height = img.height;
+	
+	                if (width > height && width > maxWidth) {
+	                    height = (height * maxWidth) / width;
+	                    width = maxWidth;
+	                } else if (height > width && height > maxHeight) {
+	                    width = (width * maxHeight) / height;
+	                    height = maxHeight;
+	                }
+	
+	                canvas.width = width;
+	                canvas.height = height;
+	                ctx.drawImage(img, 0, 0, width, height);
+	
+	                // 将图片转换为 Base64 数据
+	                const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+	                resolve(compressedBase64);
+	            };
+	            img.onerror = (error) => reject(error);
+	            img.src = event.target.result;
+	        };
+	        reader.onerror = (error) => reject(error);
+	        reader.readAsDataURL(file);
+	    });
 	};
 
 	useEffect(() => {
@@ -913,7 +913,7 @@ const ProductManagement = () => {
 
 
 	return (
-		<div>
+		<Box>
 			{/* Header Section */}
 			<Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
 				<Button
@@ -983,41 +983,41 @@ const ProductManagement = () => {
 								</TableCell>
 								<TableCell>
 									{editProductId === product.ProductID ? (
-										<div style={{ display: 'flex', alignItems: 'center' }}>
+										<Box style={{ display: 'flex', alignItems: 'center' }}>
 											{/* 显示当前图片 */}
-
+											
 											{/* 提供输入框修改图片路径 */}
-											<div style={{ display: 'flex', alignItems: 'center' }}>
-												{/* 显示当前图片 */}
-												{tempEditedProduct?.ProductImage && (
-													<img
-														src={tempEditedProduct.ProductImage}
-														alt="Product Preview"
-														style={{
-															width: '80px',
-															height: '80px',
-															objectFit: 'cover',
-															marginRight: '10px',
-														}}
-													/>
-												)}
-												{/* 上传按钮 */}
-												<Button
-													variant="contained"
-													component="label"
-													size="small"
-													sx={{ marginRight: '10px' }}
-												>
-													Upload Image
-													<input
-														type="file"
-														accept="image/*"
-														hidden
-														onChange={(e) => handleImageUpload(e)}
-													/>
-												</Button>
-											</div>
-										</div>
+											<Box style={{ display: 'flex', alignItems: 'center' }}>
+											    {/* 显示当前图片 */}
+											    {tempEditedProduct?.ProductImage && (
+											        <img
+											            src={tempEditedProduct.ProductImage}
+											            alt="Product Preview"
+											            style={{
+											                width: '80px',
+											                height: '80px',
+											                objectFit: 'cover',
+											                marginRight: '10px',
+											            }}
+											        />
+											    )}
+											    {/* 上传按钮 */}
+											    <Button
+											        variant="contained"
+											        component="label"
+											        size="small"
+											        sx={{ marginRight: '10px' }}
+											    >
+											        Upload Image
+											        <input
+											            type="file"
+											            accept="image/*"
+											            hidden
+											            onChange={(e) => handleImageUpload(e)}
+											        />
+											    </Button>
+											</Box>
+										</Box>
 									) : (
 										<img
 											src={product.ProductImage}
@@ -1128,42 +1128,15 @@ const ProductManagement = () => {
 												onChange={(e) => setNewProduct({ ...newProduct, ProductSpecifications: e.target.value })}
 												margin="dense"
 											/>
-											
-										
-									
-									
-												
-												{/* 上传按钮 */}
-												<Button
-													variant="contained"
-													component="label"
-													size="small"
-													sx={{ marginRight: '10px' }}
-												>
-													Upload Image
-													<input
-														type="file"
-														accept="image/*"
-														hidden
-														onChange={(e) => handleImageUpload(e)}
-													/>
-												</Button>
-										
-												{newProduct.ProductImage && (
-													<div>
-													<img
-														src={newProduct.ProductImage}
-														alt="Product Preview"
-														style={{
-															width: '80px',
-															height: '80px',
-															objectFit: 'cover',
-															marginRight: '10px',
-														}}
-													/>
-													</div>
-												)}
-										
+											<TextField
+												label="Product Image"
+												fullWidth
+												value={newProduct.ProductImage}
+												onChange={(e) => setNewProduct({ ...newProduct, ProductImage: e.target.value })}
+												error={!!error?.ProductImage}
+												helperText={error?.ProductImage || ''}
+												margin="dense"
+											/>
 											<TextField
 												label="Product Price"
 												fullWidth
@@ -1227,61 +1200,104 @@ const ProductManagement = () => {
 					{snackbarMessage}  {/* 显示提示消息 */}
 				</Alert>
 			</Snackbar>
-		</div>
+		</Box>
 
 	);
 }
 
 const AdminDashboard = () => {
-	const [selectedSection, setSelectedSection] = useState('User Management');
+  const [selectedSection, setSelectedSection] = useState('User Management');
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-	return (
-		<Box sx={{ display: "flex", height: "100vh" }}>
-			{/* 侧边栏导航 */}
-			<Drawer
-				variant="permanent"
-				sx={{
-					width: 240,
-					flexShrink: 0,
-					[`& .MuiDrawer-paper`]: {
-						width: 240,
-						boxSizing: "border-box",
-						zIndex: (theme) => theme.zIndex.appBar - 1,
-					},
-				}}
-			>
-				<Toolbar />
-				<List>
-					{NAVIGATION.map((item) => (
-						<ListItem
-							button
-							key={item.id}
-							onClick={() => setSelectedSection(item.label)}
-							selected={selectedSection === item.label}
-							sx={{
-								backgroundColor: selectedSection === item.label ? "lightblue" : "inherit",
-								"&:hover": {
-									backgroundColor: selectedSection === item.label ? "lightblue" : "lightgray", // 保持选中时背景不变
-								},
-							}}
-						>
-							<ListItemText primary={item.label} />
-						</ListItem>
-					))}
-				</List>
-			</Drawer>
-			{/* 主内容区域 */}
-			<Box sx={{ flexGrow: 1, p: 3 }}>
-				<Typography variant="h4" gutterBottom>
-					{selectedSection}
-				</Typography>
-				{selectedSection === "User Management" && <UserManagement />}
-				{selectedSection === "Product Management" && <ProductManagement />}
-			</Box>
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
+  return (
+    <Box sx={{ display: "flex", height: "100vh" }}>
+      <CssBaseline />
 
-		</Box >
-	);
+      {/* 小屏幕上的 AppBar */}
+      {isSmallScreen && (
+        <AppBar position="fixed">
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={() => setDrawerOpen(!drawerOpen)}
+            >
+              <Menu />
+            </IconButton>
+            <Typography variant="h6" noWrap>
+              Admin Dashboard
+            </Typography>
+          </Toolbar>
+        </AppBar>
+      )}
+
+      {/* 响应式 Drawer */}
+      <Drawer
+        variant={isSmallScreen ? "temporary" : "permanent"}
+        open={isSmallScreen ? drawerOpen : true}
+        onClose={() => setDrawerOpen(false)}
+        sx={{
+          width: 240,
+          flexShrink: 0,
+          [`& .MuiDrawer-paper`]: {
+            width: 240,
+            boxSizing: "border-box",
+            zIndex: (theme) => theme.zIndex.appBar - 1,
+			marginTop:6
+          },
+        }}
+      >
+        {isSmallScreen && <Toolbar />}
+        <List>
+          {NAVIGATION.map((item) => (
+            <ListItem
+              button
+              key={item.id}
+              onClick={() => {
+                setSelectedSection(item.label);
+                if (isSmallScreen) {
+                  setDrawerOpen(false); // 在小屏幕上选择后关闭 Drawer
+                }
+              }}
+              selected={selectedSection === item.label}
+              sx={{
+                backgroundColor: selectedSection === item.label ? "lightblue" : "inherit",
+                "&:hover": {
+                  backgroundColor: selectedSection === item.label ? "lightblue" : "lightgray",
+                },
+              }}
+            >
+              <ListItemText primary={item.label} />
+            </ListItem>
+          ))}
+        </List>
+      </Drawer>
+
+      {/* 主内容区域 */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          width: { sm: `calc(100% - 240px)` },
+          marginTop: isSmallScreen ? "64px" : 0,
+        }}
+      >
+        <Typography variant="h4" gutterBottom>
+          {selectedSection}
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            {selectedSection === "User Management" && <UserManagement />}
+            {selectedSection === "Product Management" && <ProductManagement />}
+          </Grid>
+        </Grid>
+      </Box>
+    </Box>
+  );
 };
 
 export default AdminDashboard;
