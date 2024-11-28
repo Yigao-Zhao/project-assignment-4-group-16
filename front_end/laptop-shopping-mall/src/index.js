@@ -4,10 +4,8 @@ import AppRoutes from './routes/AppRoutes';
 import { AuthProvider } from './context/AuthContext';
 
 
-// 获取根节点
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
-// 渲染应用
 root.render(
     <React.StrictMode>
         <AuthProvider>

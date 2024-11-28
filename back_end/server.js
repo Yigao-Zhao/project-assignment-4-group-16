@@ -17,6 +17,13 @@ app.use('/api/user', userRoutes);
 const productRoutes = require('./routes/productRoutes'); 
 app.use('/api/product', productRoutes); 
 
+const cartRoutes = require('./routes/cartRoutes'); 
+app.use('/api/cart', cartRoutes); 
+
+const orderRoutes = require('./routes/orderRoutes'); 
+app.use('/api/order', orderRoutes); 
+
+
 app.use('/images', express.static(path.join(__dirname, '..', 'front_end', 'laptop-shopping-mall', 'public', 'image')));
 
 // Start the server

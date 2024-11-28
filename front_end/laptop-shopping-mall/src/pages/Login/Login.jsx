@@ -18,7 +18,9 @@ const Login = () => {
         try {
             const data = await loginService(email, password);
             localStorage.setItem('token', data.token);
-            login();
+            login({
+            userId: data.user.id,
+        }	);
 
             if (data.user.isAdmin === 'Y') {
                 navigate('/admin');

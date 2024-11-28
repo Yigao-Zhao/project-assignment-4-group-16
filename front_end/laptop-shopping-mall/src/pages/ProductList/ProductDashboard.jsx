@@ -20,21 +20,23 @@ import {
     IconButton,
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { Avatar, ListItemAvatar } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext'; // 引入 AuthContext
 import { fetchProducts } from '../../services/productService';
+import { addItemToCart } from '../../services/cartService';
+import { removeItemFromCart } from '../../services/cartService';
+import { fetchCart } from '../../services/cartService'; 
+
 //import Product from '../../../../../back_end/models/productModel';
 
 const ProductDashboard = () => {
-    const [cart, setCart] = useState([
-        { id: 1, title: 'Laptop 1', price: 100, quantity: 1, checked: false },
-        { id: 2, title: 'Laptop 2', price: 200, quantity: 2, checked: false },
-    ]); // Predefined cart items
+    const [cart, setCart] = useState([]); // Predefined cart items
     const [isCartOpen, setIsCartOpen] = useState(false); // Drawer open/close state
     const navigate = useNavigate();
-    const { isAuthenticated } = useAuth(); // 从 AuthContext 获取登录状态
+    const { isAuthenticated, userId} = useAuth(); // 从 AuthContext 获取登录状态
 
     const [isLoading, setIsLoading] = useState(true); // 加载状态
     const [products, setProducts] = useState([]); // 产品列表
@@ -43,7 +45,6 @@ const ProductDashboard = () => {
         const fetchData = async () => {
             try {
                 setIsLoading(true);
-
                 // Fetch products from the server
                 const response = await axios.get('http://localhost:5005/api/product/products');
                 setProducts(response.data.products); // 设置产品数据
@@ -53,29 +54,97 @@ const ProductDashboard = () => {
                 setIsLoading(false);
             }
         };
+		const loadCart = async () => {
+		        try {
+		            const cartItems = await fetchCart(userId.userId);
+		            console.log('Fetched cart items:', cartItems);
+		            setCart(Array.isArray(cartItems) ? cartItems : []); // 确保 cartItems 是数组
+		        } catch (error) {
+		            console.error('Failed to load cart:', error.message);
+		            setCart([]); // 遇到错误时设置为空数组
+		        } finally {
+		            setIsLoading(false);
+		        }
+		    };
+		
+		    if (isAuthenticated && userId) {
+		        loadCart();
+		    }
 
         fetchData();
     }, []);
 
-
-    // Add to cart
-    const handleAddToCart = (product) => {
+const handleremoveChange = async (product) => {
         if (!isAuthenticated) {
             console.log('User not logged in, redirecting to login page');
-            navigate('/login'); // Redirect to login page if not logged in
-        } else {
-            console.log('User logged in, adding product to cart:', product);
-            // 写加入购物车的逻辑
+            navigate('/login'); // 未登录时跳转到登录页面
+            return;
+        }
+            
+        try {
+            const cartId = 101; // 示例值，根据实际需求动态设置
+            const quantity = 1;
+        
+            await removeItemFromCart(userId.userId, cartId, product.ProductID);
+        	const cartItems = await fetchCart(userId.userId);
+        	console.log('Fetched cart items:', cartItems);
+        	setCart(Array.isArray(cartItems) ? cartItems : []);
+        } catch (error) {
+            console.error('Failed to add product to cart:', error.message);
         }
     };
+    // Add to cart
+    const handleAddToCart = async (product) => {
+            if (!isAuthenticated) {
+                console.log('User not logged in, redirecting to login page');
+                navigate('/login'); // 未登录时跳转到登录页面
+                return;
+            }
+    
+            try {
+                const cartId = 101; // 示例值，根据实际需求动态设置
+                const quantity = 1;
+
+                await addItemToCart(userId.userId, cartId, product.ProductID, quantity);
+				const cartItems = await fetchCart(userId.userId);
+				console.log('Fetched cart items:', cartItems);
+				setCart(Array.isArray(cartItems) ? cartItems : []);
+            } catch (error) {
+                console.error('Failed to add product to cart:', error.message);
+            }
+        };
 
     // View details and navigate to ProductList page
     const handleViewDetails = (product) => {
         navigate('/ProductDetail', { state: { product } });
     };
+	const handleCheckout = () => {
+		if (!isAuthenticated) {
+			navigate('/login');
+			return;
+		}
+
+		// 筛选选中的商品并提取 CartItemID
+		const selectedItems = cart
+			.filter((item) => item.checked) // 筛选选中的商品
+			.map((item) => item); // 提取 CartItemID
+
+		// 在控制台打印选中的商品 ID
+		console.log('Selected CartItemIDs for :', selectedItems);
+
+		// 导航到支付页面（可传递选中商品数据）
+		navigate('/payment', { state: { selectedItems } });
+	};
 
     // Toggle cart drawer
-    const toggleCart = (open) => {
+    const toggleCart = async (open) => {
+		if (!isAuthenticated) {
+			navigate('/login');
+			return;
+		}
+		const cartItems = await fetchCart(userId.userId);
+		console.log('Fetched cart items:', cartItems);
+		setCart(Array.isArray(cartItems) ? cartItems : []);
         setIsCartOpen(open);
     };
 
@@ -160,80 +229,89 @@ const ProductDashboard = () => {
                 Shopping Cart
             </Typography>
             <Divider />
-            <List>
-                {cart.map((item) => (
-                    <ListItem
-                        key={item.id}
-                        secondaryAction={
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <IconButton
-                                    edge="end"
-                                    onClick={() =>
-                                        setCart((prevCart) =>
-                                            prevCart.map((cartItem) =>
-                                                cartItem.id === item.id && cartItem.quantity > 1
-                                                    ? { ...cartItem, quantity: cartItem.quantity - 1 }
-                                                    : cartItem
-                                            )
+            {isLoading ? (
+                <Typography sx={{ mt: 2 }} align="center">
+                    Loading...
+                </Typography>
+            ) : cart.length === 0 ? (
+                <Typography sx={{ mt: 2 }} align="center">
+                    Your cart is empty.
+                </Typography>
+            ) : (
+                <List>
+                    {cart.map((item) => (
+                        <ListItem
+                            key={item.CartItemID}
+                            secondaryAction={
+                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                    <IconButton
+                                        edge="end"
+                                        onClick={() => handleremoveChange(item)}
+                                    >
+                                        <RemoveIcon />
+                                    </IconButton>
+                                    <Typography
+                                        variant="body1"
+                                        sx={{ mx: 1, minWidth: '20px', textAlign: 'center' }}
+                                    >
+                                        {item.Quantity}
+                                    </Typography>
+                                    <IconButton
+                                        edge="end"
+                                        onClick={() => handleAddToCart(item)}
+                                    >
+                                        <AddIcon />
+                                    </IconButton>
+                                </Box>
+                            }
+                        >
+                            <ListItemAvatar>
+                                <Avatar
+                                    src={`http://localhost:5005/images/${item.ProductImage}`}
+                                    alt={item.ProductName}
+                                    sx={{ width: 56, height: 56 }}
+                                />
+                            </ListItemAvatar>
+                            <Checkbox
+                                checked={item.checked || false}
+                                onChange={() => {
+                                    setCart((prevCart) =>
+                                        prevCart.map((cartItem) =>
+                                            cartItem.CartItemID === item.CartItemID
+                                                ? { ...cartItem, checked: !cartItem.checked }
+                                                : cartItem
                                         )
-                                    }
-                                >
-                                    <RemoveIcon />
-                                </IconButton>
-                                <Typography
-                                    variant="body1"
-                                    sx={{ mx: 1, minWidth: '20px', textAlign: 'center' }}
-                                >
-                                    {item.quantity}
-                                </Typography>
-                                <IconButton
-                                    edge="end"
-                                    onClick={() =>
-                                        setCart((prevCart) =>
-                                            prevCart.map((cartItem) =>
-                                                cartItem.id === item.id
-                                                    ? { ...cartItem, quantity: cartItem.quantity + 1 }
-                                                    : cartItem
-                                            )
-                                        )
-                                    }
-                                >
-                                    <AddIcon />
-                                </IconButton>
-                            </Box>
-                        }
-                    >
-                        <Checkbox
-                            checked={item.checked}
-                            onChange={() => {
-                                setCart((prevCart) =>
-                                    prevCart.map((cartItem) =>
-                                        cartItem.id === item.id
-                                            ? { ...cartItem, checked: !cartItem.checked }
-                                            : cartItem
-                                    )
-                                );
-                            }}
-                        />
-                        <ListItemText
-                            primary={item.title}
-                            secondary={`Price: $${item.price}`}
-                        />
-                    </ListItem>
-                ))}
-            </List>
+                                    );
+                                }}
+                            />
+                            <ListItemText
+                                primary={item.ProductName}
+                                secondary={`Price: $${item.ProductPrice.toFixed(2)}`}
+                            />
+                        </ListItem>
+                    ))}
+                </List>
+            )}
             <Divider sx={{ my: 2 }} />
+    
+            {/* 总价格计算 */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                <Typography variant="subtitle1">Total:</Typography>
+                <Typography variant="subtitle1">
+                    $
+                    {cart
+                        .filter((item) => item.checked) // 筛选选中的商品
+                        .reduce((total, item) => total + item.ProductPrice * item.Quantity, 0) // 计算总价
+                        .toFixed(2)}
+                </Typography>
+            </Box>
+    
             <Button
                 variant="contained"
                 color="success"
                 fullWidth
-                onClick={() => {
-                    if (!isAuthenticated) {
-                        navigate('/login');
-                    } else {
-                        navigate('/payment');
-                    }
-                }}
+                onClick={handleCheckout}
+                disabled={cart.length === 0}
             >
                 Checkout
             </Button>
