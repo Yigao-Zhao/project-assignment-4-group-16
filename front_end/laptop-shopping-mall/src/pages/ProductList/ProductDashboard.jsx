@@ -18,6 +18,10 @@ import {
     Divider,
     Checkbox,
     IconButton,
+    TextField,
+    Slider,
+    FormControlLabel,
+    FormGroup,
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { Avatar, ListItemAvatar } from '@mui/material';
@@ -41,6 +45,13 @@ const ProductDashboard = () => {
     const [isLoading, setIsLoading] = useState(true); // 加载状态
     const [products, setProducts] = useState([]); // 产品列表
 
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedTypes, setSelectedTypes] = useState([]);
+    const [priceRange, setPriceRange] = useState([0, 1000]); // Example range: 0 to 1000
+
+   // Extract unique types from products
+   const uniqueTypes = Array.from(new Set(products.map((product) => product.ProductType)));
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -56,7 +67,7 @@ const ProductDashboard = () => {
         };
 		const loadCart = async () => {
 		        try {
-		            const cartItems = await fetchCart(userId.userId);
+		            const cartItems = await fetchCart(userId.UserId);
 		            console.log('Fetched cart items:', cartItems);
 		            setCart(Array.isArray(cartItems) ? cartItems : []); // 确保 cartItems 是数组
 		        } catch (error) {
@@ -73,6 +84,36 @@ const ProductDashboard = () => {
 
         fetchData();
     }, []);
+
+
+     // Handle filtering
+     const filteredProducts = products
+     .filter(
+        (product) =>
+            (product.ProductName && product.ProductName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+            (product.ProductSpecifications && product.ProductSpecifications.toLowerCase().includes(searchQuery.toLowerCase())) ||
+            (product.ProductType && product.ProductType.toLowerCase().includes(searchQuery.toLowerCase()))
+    )
+     .filter((product) => {
+         if (selectedTypes.length === 0) return true;
+         return selectedTypes.includes(product.ProductType);
+     })
+     .filter((product) => {
+         const [minPrice, maxPrice] = priceRange;
+         return product.ProductPrice >= minPrice && product.ProductPrice <= maxPrice;
+     });
+
+ // Update selected product types
+ const handleTypeChange = (type) => {
+     setSelectedTypes((prevSelected) =>
+         prevSelected.includes(type)
+             ? prevSelected.filter((t) => t !== type)
+             : [...prevSelected, type]
+     );
+ };
+
+ // Update price range
+ const handlePriceChange = (event, newValue) => setPriceRange(newValue);
 
 const handleremoveChange = async (product) => {
         if (!isAuthenticated) {
@@ -165,8 +206,55 @@ const handleremoveChange = async (product) => {
                     Product List
                 </Typography>
             </Box>
+
+             {/* Search and Filters */}
+             <Box sx={{ mb: 4 }}>
+                {/* Search Bar */}
+                <TextField
+                    fullWidth
+                    variant="outlined"
+                    label="Search by name or keywords"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+
+                {/* Type Filters */}
+                <Typography variant="subtitle1" sx={{ mt: 2 }}>
+                    Filter by Product Type
+                </Typography>
+                <FormGroup row>
+                    {uniqueTypes.map((type) => (
+                        <FormControlLabel
+                            key={type}
+                            control={
+                                <Checkbox
+                                    checked={selectedTypes.includes(type)}
+                                    onChange={() => handleTypeChange(type)}
+                                />
+                            }
+                            label={type}
+                        />
+                    ))}
+                </FormGroup>
+
+                {/* Price Range Slider */}
+                <Typography variant="subtitle1" sx={{ mt: 2 }}>
+                    Filter by Price Range
+                </Typography>
+                <Slider
+                    value={priceRange}
+                    onChange={handlePriceChange}
+                    valueLabelDisplay="auto"
+                    min={0}
+                    max={2000} // Adjust the max price as needed
+                />
+                <Typography>
+                    Price Range: ${priceRange[0]} - ${priceRange[1]}
+                </Typography>
+            </Box>
+
             <Grid container direction="column" spacing={2}>
-                {products.map((product) => (
+                {filteredProducts.map((product) => (
                     <Grid item key={product.ProductId}>
                         <Card sx={{ width: '100%' , display: 'flex', flexDirection: 'column' }}>
                             <CardMedia
