@@ -48,6 +48,7 @@ const ProductDashboard = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedTypes, setSelectedTypes] = useState([]);
     const [priceRange, setPriceRange] = useState([0, 1000]); // Example range: 0 to 1000
+    const [maxPrice, setMaxPrice] = useState(2000); // Default max price (can be updated dynamically)
 
    // Extract unique types from products
    const uniqueTypes = Array.from(new Set(products.map((product) => product.ProductType)));
@@ -85,6 +86,14 @@ const ProductDashboard = () => {
         fetchData();
     }, []);
 
+
+     // Calculate dynamic max price
+     useEffect(() => {
+        if (products.length > 0) {
+            const maxProductPrice = Math.max(...products.map((product) => product.ProductPrice));
+            setMaxPrice(maxProductPrice); // Set max price dynamically based on the products
+        }
+    }, [products]); // Recalculate whenever products change
 
      // Handle filtering
      const filteredProducts = products
@@ -250,7 +259,7 @@ const handleremoveChange = async (product) => {
                     onChange={handlePriceChange}
                     valueLabelDisplay="auto"
                     min={0}
-                    max={2000} // Adjust the max price as needed
+                    max={maxPrice} // Dynamically set max price based on products
                 />
                 <Typography>
                     Price Range: ${priceRange[0]} - ${priceRange[1]}
