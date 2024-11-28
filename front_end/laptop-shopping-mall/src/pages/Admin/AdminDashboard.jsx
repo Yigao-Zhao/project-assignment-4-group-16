@@ -700,8 +700,6 @@ const ProductManagement = () => {
 			errors.ProductType = "Product type is required.";
 		}
 
-		
-
 		if (product.ProductPrice === "") {
 			errors.ProductPrice = "Product price is required.";
 		}
@@ -848,54 +846,62 @@ const ProductManagement = () => {
 			setError(err.message);
 		}
 	};
-	
+
 	const handleImageUpload = async (e) => {
-	    const file = e.target.files[0];
-	    try {
-	        const compressedBase64 = await compressImage(file, 0.2);
-			handleTempProductEdit('ProductImage', compressedBase64);
-			
-	    } catch (error) {
-	        console.error('Error compressing image:', error);
-	    }
+		const file = e.target.files[0];
+		try {
+			const compressedBase64 = await compressImage(file, 0.2);
+			if (showAddProductDialog) {
+				// 如果是新建操作，更新 newProduct
+				setNewProduct((prev) => ({
+					...prev,
+					ProductImage: compressedBase64,
+				}));
+			} else if (editProductId) {
+				// 如果是编辑操作，更新 tempEditedProduct
+				handleTempProductEdit('ProductImage', compressedBase64);
+			}
+		} catch (error) {
+			console.error('Error compressing image:', error);
+		}
 	};
 	const compressImage = (file, quality = 0.7) => {
-	    return new Promise((resolve, reject) => {
-	        const reader = new FileReader();
-	        reader.onload = (event) => {
-	            const img = new Image();
-	            img.onload = () => {
-	                const canvas = document.createElement('canvas');
-	                const ctx = canvas.getContext('2d');
-	
-	                // 设置最大宽度和高度，保持图片比例
-	                const maxWidth = 800;
-	                const maxHeight = 800;
-	                let width = img.width;
-	                let height = img.height;
-	
-	                if (width > height && width > maxWidth) {
-	                    height = (height * maxWidth) / width;
-	                    width = maxWidth;
-	                } else if (height > width && height > maxHeight) {
-	                    width = (width * maxHeight) / height;
-	                    height = maxHeight;
-	                }
-	
-	                canvas.width = width;
-	                canvas.height = height;
-	                ctx.drawImage(img, 0, 0, width, height);
-	
-	                // 将图片转换为 Base64 数据
-	                const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
-	                resolve(compressedBase64);
-	            };
-	            img.onerror = (error) => reject(error);
-	            img.src = event.target.result;
-	        };
-	        reader.onerror = (error) => reject(error);
-	        reader.readAsDataURL(file);
-	    });
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = (event) => {
+				const img = new Image();
+				img.onload = () => {
+					const canvas = document.createElement('canvas');
+					const ctx = canvas.getContext('2d');
+
+					// 设置最大宽度和高度，保持图片比例
+					const maxWidth = 800;
+					const maxHeight = 800;
+					let width = img.width;
+					let height = img.height;
+
+					if (width > height && width > maxWidth) {
+						height = (height * maxWidth) / width;
+						width = maxWidth;
+					} else if (height > width && height > maxHeight) {
+						width = (width * maxHeight) / height;
+						height = maxHeight;
+					}
+
+					canvas.width = width;
+					canvas.height = height;
+					ctx.drawImage(img, 0, 0, width, height);
+
+					// 将图片转换为 Base64 数据
+					const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+					resolve(compressedBase64);
+				};
+				img.onerror = (error) => reject(error);
+				img.src = event.target.result;
+			};
+			reader.onerror = (error) => reject(error);
+			reader.readAsDataURL(file);
+		});
 	};
 
 	useEffect(() => {
@@ -979,37 +985,37 @@ const ProductManagement = () => {
 									{editProductId === product.ProductID ? (
 										<div style={{ display: 'flex', alignItems: 'center' }}>
 											{/* 显示当前图片 */}
-											
+
 											{/* 提供输入框修改图片路径 */}
 											<div style={{ display: 'flex', alignItems: 'center' }}>
-											    {/* 显示当前图片 */}
-											    {tempEditedProduct?.ProductImage && (
-											        <img
-											            src={tempEditedProduct.ProductImage}
-											            alt="Product Preview"
-											            style={{
-											                width: '80px',
-											                height: '80px',
-											                objectFit: 'cover',
-											                marginRight: '10px',
-											            }}
-											        />
-											    )}
-											    {/* 上传按钮 */}
-											    <Button
-											        variant="contained"
-											        component="label"
-											        size="small"
-											        sx={{ marginRight: '10px' }}
-											    >
-											        Upload Image
-											        <input
-											            type="file"
-											            accept="image/*"
-											            hidden
-											            onChange={(e) => handleImageUpload(e)}
-											        />
-											    </Button>
+												{/* 显示当前图片 */}
+												{tempEditedProduct?.ProductImage && (
+													<img
+														src={tempEditedProduct.ProductImage}
+														alt="Product Preview"
+														style={{
+															width: '80px',
+															height: '80px',
+															objectFit: 'cover',
+															marginRight: '10px',
+														}}
+													/>
+												)}
+												{/* 上传按钮 */}
+												<Button
+													variant="contained"
+													component="label"
+													size="small"
+													sx={{ marginRight: '10px' }}
+												>
+													Upload Image
+													<input
+														type="file"
+														accept="image/*"
+														hidden
+														onChange={(e) => handleImageUpload(e)}
+													/>
+												</Button>
 											</div>
 										</div>
 									) : (
@@ -1122,15 +1128,42 @@ const ProductManagement = () => {
 												onChange={(e) => setNewProduct({ ...newProduct, ProductSpecifications: e.target.value })}
 												margin="dense"
 											/>
-											<TextField
-												label="Product Image"
-												fullWidth
-												value={newProduct.ProductImage}
-												onChange={(e) => setNewProduct({ ...newProduct, ProductImage: e.target.value })}
-												error={!!error?.ProductImage}
-												helperText={error?.ProductImage || ''}
-												margin="dense"
-											/>
+											
+										
+									
+									
+												
+												{/* 上传按钮 */}
+												<Button
+													variant="contained"
+													component="label"
+													size="small"
+													sx={{ marginRight: '10px' }}
+												>
+													Upload Image
+													<input
+														type="file"
+														accept="image/*"
+														hidden
+														onChange={(e) => handleImageUpload(e)}
+													/>
+												</Button>
+										
+												{newProduct.ProductImage && (
+													<div>
+													<img
+														src={newProduct.ProductImage}
+														alt="Product Preview"
+														style={{
+															width: '80px',
+															height: '80px',
+															objectFit: 'cover',
+															marginRight: '10px',
+														}}
+													/>
+													</div>
+												)}
+										
 											<TextField
 												label="Product Price"
 												fullWidth
