@@ -173,13 +173,14 @@ const handleremoveChange = async (product) => {
                                 component="img"
                                height="300"
                                //objectFit= 'contain'// 保持图片比例，适应容器大小
-                                image={product?.ProductImage ? `/image/${product.ProductImage}` : ''}
+                                image={product.ProductImage}
                                 alt={product?.ProductName}
                                 sx={{
                                    objectFit: 'contain', // 保持图片比例，适应容器大小
                                    flexShrink: 0, // 防止图片被压缩
                                 }}
                             />
+							
                         <CardContent>
                             <Typography variant="h6">{product.ProductName}</Typography>
                             <Typography variant="body2" color="text.secondary">
@@ -267,10 +268,11 @@ const handleremoveChange = async (product) => {
                         >
                             <ListItemAvatar>
                                 <Avatar
-                                    src={`http://localhost:5005/images/${item.ProductImage}`}
+                                    src={item.ProductImage}
                                     alt={item.ProductName}
                                     sx={{ width: 56, height: 56 }}
                                 />
+								
                             </ListItemAvatar>
                             <Checkbox
                                 checked={item.checked || false}
