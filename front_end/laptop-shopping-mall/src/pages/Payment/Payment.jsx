@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext'; // 引入 AuthContext
+import { useNavigate } from 'react-router-dom';
 import {
     Container,
     Box,
@@ -24,6 +25,7 @@ import {
 import { paymentOrder } from '../../services/orderService';
 
 const PaymentPage = () => {
+	const navigate = useNavigate();
     const location = useLocation();
     const { selectedItems } = location.state || { selectedItems: [] };
 	const { isAuthenticated, userId} = useAuth();
@@ -50,6 +52,7 @@ const PaymentPage = () => {
     const handlePayment = async() => {
 		await paymentOrder(userId.userId, selectedItems.map((item) => item.CartItemID), cardDetails);
         handleCloseDialog(); // 关闭支付框
+		navigate('/');
     };
 	
 	
