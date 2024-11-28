@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Typography,
@@ -7,20 +7,48 @@ import {
   CardContent,
   CardMedia,
   Button,
+  TextField,
+  Snackbar,
+  Alert,
 } from "@mui/material";
+import { useLocation } from "react-router-dom";
 
 const ProductDetail = () => {
-  // Example product data
-  const product = {
-    ProductID: "12345",
-    ProductName: "Wireless Headphones",
-    ProductType: "Electronics",
-    ProductSpecifications:
-      "Bluetooth 5.0, Noise Cancelling, 20 Hours Battery Life",
-    ProductImage: "https://via.placeholder.com/600x400", // Replace with actual image URL
-    ProductPrice: "$199.99",
-    ProductStock: "In Stock",
+  const location = useLocation();
+  const product = location.state?.product; // 从路由状态中接收产品数据
+  const [reviews, setReviews] = useState([
+    // 静态 DEMO 评论数据
+    { rating: 5, text: "Excellent product!" },
+    { rating: 4, text: "Very good, but a bit pricey." },
+  ]);
+  const [newReview, setNewReview] = useState(""); // 用户输入的新评论
+  const [rating, setRating] = useState(0); // 用户输入的新评分
+  const [openSnackbar, setOpenSnackbar] = useState(false); // 控制提示框
+  const [snackbarMessage, setSnackbarMessage] = useState(""); // 提示消息
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // 提示类型
+
+  // 提交评论
+  const handleSubmitReview = () => {
+    if (!rating || !newReview) {
+      setSnackbarMessage("Please provide both rating and review.");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
+      return;
+    }
+
+    // 模拟新增评论（静态数据）
+    setReviews((prev) => [...prev, { rating, text: newReview }]);
+    setNewReview("");
+    setRating(0);
+    setSnackbarMessage("Review added successfully!");
+    setSnackbarSeverity("success");
+    setOpenSnackbar(true);
   };
+
+  if (!product) {
+    // 如果没有产品数据，提示用户
+    return <Typography>Product details are not available.</Typography>;
+  }
 
   return (
     <Box
@@ -30,17 +58,10 @@ const ProductDetail = () => {
         padding: 4,
       }}
     >
-      {/* Product Page Layout */}
       <Grid container spacing={4} justifyContent="center">
-        {/* Product Image Section */}
+        {/* 产品图片 */}
         <Grid item xs={12} md={6}>
-          <Card
-            sx={{
-              boxShadow: 4,
-              borderRadius: 2,
-              overflow: "hidden",
-            }}
-          >
+          <Card sx={{ boxShadow: 4, borderRadius: 2, overflow: "hidden" }}>
             <CardMedia
               component="img"
               image={product.ProductImage}
@@ -54,7 +75,7 @@ const ProductDetail = () => {
           </Card>
         </Grid>
 
-        {/* Product Details Section */}
+        {/* 产品详情 */}
         <Grid item xs={12} md={6}>
           <Card
             sx={{
@@ -65,14 +86,7 @@ const ProductDetail = () => {
             }}
           >
             <CardContent>
-              <Typography
-                variant="h4"
-                component="div"
-                sx={{
-                  fontWeight: "bold",
-                  mb: 2,
-                }}
-              >
+              <Typography variant="h4" sx={{ fontWeight: "bold", mb: 2 }}>
                 {product.ProductName}
               </Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
@@ -84,66 +98,72 @@ const ProductDetail = () => {
               <Typography variant="body1" sx={{ mb: 1 }}>
                 <strong>Specifications:</strong> {product.ProductSpecifications}
               </Typography>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: "bold",
-                  color: "#d32f2f",
-                  my: 2,
-                }}
-              >
-                Price: {product.ProductPrice}
+              <Typography variant="h5" sx={{ fontWeight: "bold", color: "#d32f2f", my: 2 }}>
+                Price: ${product.ProductPrice}
               </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  color: product.ProductStock === "In Stock" ? "green" : "red",
-                  fontWeight: "bold",
-                }}
-              >
-                {product.ProductStock}
+              <Typography variant="body1" sx={{ color: "green", fontWeight: "bold" }}>
+                {product.ProductStock || "In Stock"}
               </Typography>
             </CardContent>
-
-            {/* Action Buttons */}
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                padding: 2,
-                gap: 2,
-              }}
-            >
-              <Button
-                variant="contained"
-                color="primary"
-                fullWidth
-                sx={{
-                  textTransform: "none",
-                  fontSize: "1rem",
-                  py: 1.5,
-                  backgroundColor: "#1976d2",
-                  ":hover": { backgroundColor: "#125ea0" },
-                }}
-              >
-                Add to Cart
-              </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                fullWidth
-                sx={{
-                  textTransform: "none",
-                  fontSize: "1rem",
-                  py: 1.5,
-                }}
-              >
-                Buy Now
-              </Button>
-            </Box>
           </Card>
         </Grid>
       </Grid>
+
+      {/* 评论部分 */}
+      <Box sx={{ mt: 5 }}>
+        <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2 }}>
+          Reviews
+        </Typography>
+        {reviews.length > 0 ? (
+          reviews.map((review, index) => (
+            <Card key={index} sx={{ mb: 2, p: 2 }}>
+              <Typography>
+                <strong>Rating:</strong> {review.rating} / 5
+              </Typography>
+              <Typography>{review.text}</Typography>
+            </Card>
+          ))
+        ) : (
+          <Typography>No reviews yet.</Typography>
+        )}
+
+        {/* 提交评论 */}
+        <Card sx={{ mt: 4, p: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
+            Add Your Review
+          </Typography>
+          <TextField
+            label="Your Review"
+            value={newReview}
+            onChange={(e) => setNewReview(e.target.value)}
+            fullWidth
+            multiline
+            rows={3}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            label="Your Rating (1-5)"
+            type="number"
+            value={rating}
+            onChange={(e) => setRating(Number(e.target.value))}
+            fullWidth
+            inputProps={{ min: 1, max: 5 }}
+            sx={{ mb: 2 }}
+          />
+          <Button variant="contained" onClick={handleSubmitReview}>
+            Submit Review
+          </Button>
+        </Card>
+      </Box>
+
+      {/* 提示框 */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+      >
+        <Alert severity={snackbarSeverity}>{snackbarMessage}</Alert>
+      </Snackbar>
     </Box>
   );
 };
