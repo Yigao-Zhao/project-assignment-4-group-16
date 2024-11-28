@@ -25,7 +25,7 @@ const Login = () => {
             if (data.user.isAdmin === 'Y') {
                 navigate('/admin');
             } else {
-                navigate('/user');
+                navigate('/');
             }
         } catch (err) {
             setError(err.message);

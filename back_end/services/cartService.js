@@ -7,7 +7,6 @@ const CartService = {
         try {
             const cartItems = await Cart.getCartByUserId(userId);
             if (!cartItems || cartItems.length === 0) {
-                throw new Error('No cart items found for this user');
             }
             return { success: true, cartItems };
         } catch (err) {
