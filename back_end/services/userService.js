@@ -40,6 +40,10 @@ const UserService = {
     // 更新用户
     updateUserById: async (userId, userData) => {
         try {
+			console.log(123)
+			console.log(userId)
+			console.log(userData)
+			console.log(456)
             const result = await User.updateUserById(userId, userData);
             if (result.affectedRows === 0) {
                 throw new Error('User not found');
@@ -50,6 +54,18 @@ const UserService = {
             throw new Error('Failed to update user');
         }
     },
+	getUserById: async (userId) => {
+	    try {
+	        const result = await User.getUserById(userId);
+	        if (result.affectedRows === 0) {
+	            throw new Error('User not found');
+	        }
+	        return result;
+	    } catch (err) {
+	        console.error('Error in UserService.updateUserById:', err.message);
+	        throw new Error('Failed to update user');
+	    }
+	},
 
     // 删除用户
     deleteUserById: async (userId) => {

@@ -7,6 +7,11 @@ const UserController = {
         try {
             // 登录逻辑
             const { token, user } = await UserService.login(email, password);
+			if(user.MiddleName != null){
+				midname = user.MiddleName
+			}else{
+				midname = "";
+			}
             res.json({
                 success: true,
                 message: 'Login successful',
@@ -15,6 +20,7 @@ const UserController = {
                     id: user.UserID,
                     email: user.Email,
                     isAdmin: user.IsAdmin,
+					userName:user.FirstName+" "+midname+" "+user.LastName
                 },
             });
 
@@ -39,7 +45,7 @@ const UserController = {
     },
 
     getUserById: async (req, res) => {
-        const userId = req.params.id;
+        const { userId } = req.params;
         try {
             const user = await UserService.getUserById(userId);
     
@@ -76,7 +82,7 @@ const UserController = {
     },
 
     updateUser: async (req, res) => {
-        const userId = req.params.id;
+        const userId = req.params.userId;
         const userData = req.body;
         try {
             const result = await UserService.updateUserById(userId, userData);

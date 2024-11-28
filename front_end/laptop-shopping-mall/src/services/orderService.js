@@ -24,3 +24,28 @@ export const paymentOrder = async (userId, item, cardDetails) => {
 
     return await response.json();
 };
+
+// 获取用户的购物车
+export const fetchOrder = async (userId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        throw new Error('No token found. Please log in.');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/order/${userId}`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch cart.');
+    }
+
+    const data = await response.json();
+    console.log(data)
+        // 返回 cartItems 数组
+    return data.OrderItems || [];
+};

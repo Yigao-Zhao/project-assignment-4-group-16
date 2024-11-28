@@ -8,6 +8,7 @@ const router = express.Router();
 
 // 生成订单
 router.post('/order/payment', verifyToken, OrderController.addOrder);
+router.get('/order/:userId', verifyToken, OrderController.getOrderByUserId);
 
 
 module.exports = router;

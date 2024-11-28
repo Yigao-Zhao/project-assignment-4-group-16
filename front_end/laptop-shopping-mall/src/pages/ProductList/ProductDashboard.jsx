@@ -119,21 +119,25 @@ const handleremoveChange = async (product) => {
         navigate('/ProductDetail', { state: { product } });
     };
 	const handleCheckout = () => {
-		if (!isAuthenticated) {
-			navigate('/login');
-			return;
-		}
-
-		// 筛选选中的商品并提取 CartItemID
-		const selectedItems = cart
-			.filter((item) => item.checked) // 筛选选中的商品
-			.map((item) => item); // 提取 CartItemID
-
-		// 在控制台打印选中的商品 ID
-		console.log('Selected CartItemIDs for :', selectedItems);
-
-		// 导航到支付页面（可传递选中商品数据）
-		navigate('/payment', { state: { selectedItems } });
+	    if (!isAuthenticated) {
+	        navigate('/login');
+	        return;
+	    }
+	
+	    // 筛选选中的商品
+	    const selectedItems = cart.filter((item) => item.checked);
+	
+	    if (selectedItems.length === 0) {
+	        // 如果没有选中商品，提示用户
+	        alert('no item have been selected');
+	        return;
+	    }
+	
+	    // 在控制台打印选中的商品
+	    console.log('Selected Cart Items:', selectedItems);
+	
+	    // 导航到支付页面，传递选中商品数据
+	    navigate('/payment', { state: { selectedItems } });
 	};
 
     // Toggle cart drawer

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Box,
@@ -8,6 +8,9 @@ import {
   TextField,
   Card,
   CardContent,
+  List,
+  ListItem,
+  ListItemText,
   Table,
   TableBody,
   TableCell,
@@ -15,50 +18,68 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Drawer,
+  Divider,
 } from "@mui/material";
+import { getUserInfo, updateUserInfo } from "../../services/userService";
+import { useAuth } from "../../context/AuthContext";
+import { fetchOrder } from "../../services/orderService";
 
 const UserDashboard = () => {
   const [user, setUser] = useState({
-    UserID: 1,
-    FirstName: "John",
-    MiddleName: "Doe",
-    LastName: "Smith",
-    Address: "123 Main St",
-    Email: "john@example.com",
-    PaymentMethod: "Credit Card",
-    IsAdmin: "N",
-    MyPassword: "password123",
+    UserId: "",
+    FirstName: "",
+    MiddleName: "",
+    LastName: "",
+    Address: "",
+    Email: "",
+    MyPassword: "",
   });
 
+  const [orders, setOrders] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // For order details drawer
+  const { userId } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [backupUser, setBackupUser] = useState({ ...user });
-  const [showOrderHistory, setShowOrderHistory] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [uniqueOrders, setUniqueOrders] = useState([]);
 
-  const orderHistory = [
-    {
-      id: "12345",
-      date: "2024-11-01",
-      product: "Laptop",
-      progress: "Delivered",
-      subtotal: 900,
-      taxRate: 10,
-      total: 990,
-    },
-    {
-      id: "67890",
-      date: "2024-11-05",
-      product: "Headphones",
-      progress: "Shipped",
-      subtotal: 200,
-      taxRate: 8,
-      total: 216,
-    },
-  ];
+  const fetchData = async () => {
+    try {
+      const response = await getUserInfo(userId.userId);
+      if (response && response.user && response.user.length > 0) {
+        setUser(response.user[0]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch user info:", error.message);
+    }
+  };
+const fetchOrders = async () => {
+  try {
+    const orderItems = await fetchOrder(userId.userId);
+    if (Array.isArray(orderItems)) {
+      // Group orders by OrderID and keep only the first order of each group
+      const groupedOrders = orderItems.reduce((acc, order) => {
+        if (!acc[order.OrderID]) {
+          acc[order.OrderID] = [];
+        }
+        acc[order.OrderID].push(order);
+        return acc;
+      }, {});
+      setUniqueOrders(Object.values(groupedOrders).map((group) => group[0]));
+    } else {
+      setOrders([]);
+    }
+    setOrders(orderItems);
+  } catch (error) {
+    console.error("Failed to fetch orders:", error.message);
+  }
+};
+
+  useEffect(() => {
+    fetchData();
+    fetchOrders();
+  }, [userId]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -70,9 +91,16 @@ const UserDashboard = () => {
     setIsEditing(true);
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    alert("Profile saved!");
+  const handleSave = async () => {
+    try {
+      await updateUserInfo(user);
+      alert("Profile saved successfully!");
+      setIsEditing(false);
+      await fetchData();
+    } catch (error) {
+      console.error("Error saving profile:", error.message);
+      alert("An error occurred while saving the profile. Please try again.");
+    }
   };
 
   const handleCancel = () => {
@@ -80,16 +108,27 @@ const UserDashboard = () => {
     setIsEditing(false);
   };
 
-  const toggleOrderHistory = () => {
-    setShowOrderHistory(!showOrderHistory);
+const handleOrderClick = (orderId) => {
+  // 筛选出与点击的订单ID匹配的所有订单项
+  const orderDetails = orders.filter((order) => order.OrderID === orderId);
+  // 设置选中的订单详情
+  setSelectedOrder(orderDetails);
+  // 打开抽屉显示订单详情
+  setIsDrawerOpen(true);
+};
+
+  const handleDrawerClose = () => {
+    setIsDrawerOpen(false);
+    setSelectedOrder(null);
   };
 
-  const handleOrderClick = (order) => {
-    setSelectedOrder(order); // Set the selected order to show in the dialog
-  };
-
-  const handleCloseDialog = () => {
-    setSelectedOrder(null); // Clear the selected order and close the dialog
+  const fieldLabels = {
+    FirstName: "First Name",
+    MiddleName: "Middle Name",
+    LastName: "Last Name",
+    Address: "Address",
+    Email: "Email Address",
+    MyPassword: "Password",
   };
 
   return (
@@ -120,25 +159,27 @@ const UserDashboard = () => {
           </Typography>
           <Box component="form" noValidate autoComplete="off">
             <Grid container spacing={3}>
-              {Object.keys(user).map((key) => (
-                <Grid item xs={12} sm={6} key={key}>
-                  <TextField
-                    label={key}
-                    name={key}
-                    value={user[key]}
-                    onChange={handleInputChange}
-                    fullWidth
-                    variant="outlined"
-                    InputProps={{
-                      readOnly: !isEditing,
-                    }}
-                    sx={{
-                      backgroundColor: isEditing ? "#fff" : "#f1f1f1",
-                      borderRadius: 2,
-                    }}
-                  />
-                </Grid>
-              ))}
+              {Object.keys(user)
+                .filter((key) => key in fieldLabels)
+                .map((key) => (
+                  <Grid item xs={12} sm={6} key={key}>
+                    <TextField
+                      label={fieldLabels[key]}
+                      name={key}
+                      value={user[key] || "N/A"}
+                      onChange={handleInputChange}
+                      fullWidth
+                      variant="outlined"
+                      InputProps={{
+                        readOnly: !isEditing,
+                      }}
+                      sx={{
+                        backgroundColor: isEditing ? "#fff" : "#f1f1f1",
+                        borderRadius: 2,
+                      }}
+                    />
+                  </Grid>
+                ))}
             </Grid>
             <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 4 }}>
               {isEditing ? (
@@ -147,7 +188,12 @@ const UserDashboard = () => {
                     variant="contained"
                     color="primary"
                     onClick={handleSave}
-                    sx={{ textTransform: "none", fontSize: "1rem", borderRadius: 50, px: 4 }}
+                    sx={{
+                      textTransform: "none",
+                      fontSize: "1rem",
+                      borderRadius: 50,
+                      px: 4,
+                    }}
                   >
                     Save
                   </Button>
@@ -155,7 +201,12 @@ const UserDashboard = () => {
                     variant="outlined"
                     color="secondary"
                     onClick={handleCancel}
-                    sx={{ textTransform: "none", fontSize: "1rem", borderRadius: 50, px: 4 }}
+                    sx={{
+                      textTransform: "none",
+                      fontSize: "1rem",
+                      borderRadius: 50,
+                      px: 4,
+                    }}
                   >
                     Cancel
                   </Button>
@@ -165,7 +216,12 @@ const UserDashboard = () => {
                   variant="contained"
                   color="primary"
                   onClick={handleEdit}
-                  sx={{ textTransform: "none", fontSize: "1rem", borderRadius: 50, px: 4 }}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "1rem",
+                    borderRadius: 50,
+                    px: 4,
+                  }}
                 >
                   Edit
                 </Button>
@@ -175,122 +231,100 @@ const UserDashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Order History Section */}
+      {/* Orders Section */}
       <Box sx={{ mt: 5 }}>
-        <Button
-          variant="contained"
-          onClick={toggleOrderHistory}
-          sx={{
-            mb: 2,
-            textTransform: "none",
-            fontSize: "1rem",
-            borderRadius: 50,
-            backgroundColor: "#1976d2",
-            ":hover": { backgroundColor: "#125ea0" },
-            px: 4,
-          }}
-        >
-          {showOrderHistory ? "Hide My History" : "View My Order History"}
-        </Button>
-        {showOrderHistory && (
-          <Card sx={{ p: 2, backgroundColor: "#ffffff", boxShadow: 4, borderRadius: 3 }}>
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                    <TableCell sx={{ fontWeight: "bold" }}>Date</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>Order ID</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {orderHistory.map((order) => (
-                    <TableRow
-                      key={order.id}
-                      onClick={() => handleOrderClick(order)} // Open dialog on click
-                      sx={{
-                        cursor: "pointer",
-                        "&:hover": { backgroundColor: "#f9f9f9" },
-                        transition: "background-color 0.3s",
-                      }}
-                    >
-                      <TableCell>{order.date}</TableCell>
-                      <TableCell>{order.id}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Card>
-        )}
-      </Box>
-
-      {/* Order Details Dialog */}
-      {selectedOrder && (
-        <Dialog open={true} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-          <DialogTitle sx={{ textAlign: "center", fontWeight: "bold" }}>
-            Order Details
-          </DialogTitle>
-          <DialogContent>
-            <Box sx={{ p: 2 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Typography variant="body1">
-                    <strong>Order ID:</strong> {selectedOrder.id}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body1">
-                    <strong>User ID:</strong> {user.UserID}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body1">
-                    <strong>Subtotal:</strong> ${selectedOrder.subtotal}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body1">
-                    <strong>Tax Rate:</strong> {selectedOrder.taxRate}%
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body1">
-                    <strong>Total:</strong> ${selectedOrder.total}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body1">
-                    <strong>Order Status:</strong> {selectedOrder.progress}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body1">
-                    <strong>Payment Method:</strong> {user.PaymentMethod}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body1">
-                    <strong>Order Date:</strong> {selectedOrder.date}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={handleCloseDialog}
-              variant="contained"
-              color="primary"
-              sx={{ textTransform: "none" }}
+        <Typography variant="h5" sx={{ mb: 3, fontWeight: "bold" }}>
+          Orders
+        </Typography>
+        <List>
+          {uniqueOrders.map((order) => (
+            <ListItem
+              button
+              key={order.OrderID}
+              onClick={() => handleOrderClick(order.OrderID)}
             >
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
+              <ListItemText
+                primary={`Order ID: ${order.OrderID}`}
+                secondary={`Date: ${order.OrderDate} | Total: $${order.Total?.toFixed(2)}`}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Box>
+      
+      {/* Order Details Drawer */}
+      <Drawer anchor="right" open={isDrawerOpen} onClose={handleDrawerClose}>
+        <Box sx={{ width: 400, p: 2 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Order Details
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+          {selectedOrder && (
+            <>
+              {/* Displaying order summary */}
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body1">
+                  <strong>Order ID:</strong> {selectedOrder[0].OrderID}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Date:</strong> {selectedOrder[0].OrderDate}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Status:</strong> {selectedOrder[0].OrderStatus || "N/A"}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Total:</strong> $
+                  {selectedOrder
+                    .reduce(
+                      (acc, item) =>
+                        acc + item.OrderProductQuantity * item.OrderProductSoldPrice,
+                      0
+                    )
+                    .toFixed(2)}
+                </Typography>
+              </Box>
+      
+              {/* Displaying order items */}
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Product Name</TableCell>
+                      <TableCell>Quantity</TableCell>
+                      <TableCell>Price</TableCell>
+                      <TableCell>Total</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {selectedOrder.map((item) => (
+                      <TableRow key={item.OrderItemID}>
+                        <TableCell>{item.ProductName}</TableCell>
+                        <TableCell>{item.OrderProductQuantity}</TableCell>
+                        <TableCell>${item.OrderProductSoldPrice.toFixed(2)}</TableCell>
+                        <TableCell>
+                          $
+                          {(
+                            item.OrderProductQuantity * item.OrderProductSoldPrice
+                          ).toFixed(2)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </>
+          )}
+          <Button
+            onClick={handleDrawerClose}
+            variant="contained"
+            sx={{ mt: 2, textTransform: "none" }}
+          >
+            Close
+          </Button>
+        </Box>
+      </Drawer>
     </Container>
   );
 };
 
 export default UserDashboard;
-

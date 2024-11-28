@@ -20,6 +20,7 @@ const Login = () => {
             localStorage.setItem('token', data.token);
             login({
             userId: data.user.id,
+			userName: data.user.userName,
         }	);
 
             if (data.user.isAdmin === 'Y') {

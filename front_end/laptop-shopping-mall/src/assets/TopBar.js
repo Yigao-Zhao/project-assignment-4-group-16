@@ -5,10 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const TopBar = () => {
-    console.log('TopBar is rendering');
     const navigate = useNavigate();
-    const { isAuthenticated, logout } = useAuth();
-    const userName = "John Doe";
+    const { isAuthenticated, logout,userId } = useAuth();
+	
 
     return (
         <AppBar position="fixed" sx={{ backgroundColor: '#1976d2' }}>
@@ -48,7 +47,7 @@ const TopBar = () => {
                                 onClick={() => navigate('/user')}
                                 sx={{ textTransform: 'none', marginRight: '16px' }}
                             >
-                                {userName}
+                                {userId.userName}
                             </Button>
 
                             <Button color="inherit" onClick={logout}>

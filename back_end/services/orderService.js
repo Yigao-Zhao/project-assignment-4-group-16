@@ -25,7 +25,18 @@ const OrderService = {
             console.error('Error in CartService.addItemToCart:', err.message);
             throw new Error('Failed to add item to cart');
         }
-    }
+    },
+	getOrderByUserId: async (userId) => {
+	    try {
+	        const OrderItems = await Order.getOrderByUserId(userId);
+	        if (!OrderItems || OrderItems.length === 0) {
+	        }
+	        return { success: true, OrderItems };
+	    } catch (err) {
+	        console.error('Error in CartService.getCartByUserId:', err.message);
+	        throw new Error('Failed to retrieve cart items');
+	    }
+	},
 	
 }
 module.exports = OrderService;
