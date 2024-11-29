@@ -23,6 +23,7 @@ import {
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import CryptoJS from "crypto-js";
 
 function RegisterPage() {
     const [formData, setFormData] = useState({
@@ -128,6 +129,8 @@ function RegisterPage() {
             return;
         }
         try {
+			submitData.MyPassword = CryptoJS.SHA256(submitData.MyPassword).toString();
+
             const response = await axios.post("http://localhost:5005/api/user/users", submitData);
             if (response.data.success) {
                 // 注册成功时只显示 Dialog

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import CryptoJS from "crypto-js";
 import axios from 'axios';
 import { fetchUsers } from '../../services/userService';
 import { fetchProducts } from '../../services/productService';
@@ -176,6 +177,7 @@ const UserManagement = () => {
 		}
 
 		try {
+			tempEditedUser.MyPassword = CryptoJS.SHA256(tempEditedUser.MyPassword).toString();
 			// 调用后端 API 更新user
 			const response = await axios.put(`http://localhost:5005/api/user/users/${editUserId}`, tempEditedUser);
 			console.log(response.data.message); // 打印成功消息
@@ -260,6 +262,7 @@ const UserManagement = () => {
 
 
 		try {
+			newUser.MyPassword = CryptoJS.SHA256(newUser.MyPassword).toString();
 			const response = await axios.post('http://localhost:5005/api/user/users', newUser);
 			if (response.data.success) {
 				setSnackbarMessage('User added successfully!');

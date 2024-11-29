@@ -1,3 +1,4 @@
+import CryptoJS from "crypto-js";
 const API_BASE_URL = 'http://localhost:5005/api/user';
 
 export const fetchUsers =async()=>{
@@ -47,7 +48,7 @@ export const updateUserInfo = async (user) => {
     throw new Error('No token found. Please log in.');
   }
   var userId = user.UserID
-
+	user.MyPassword = CryptoJS.SHA256(user.MyPassword).toString();
   const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
     method: 'PUT', // Use PUT or PATCH depending on your API specification
     headers: {
