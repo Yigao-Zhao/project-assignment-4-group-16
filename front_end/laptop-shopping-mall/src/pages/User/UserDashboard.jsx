@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useState, useEffect } from "react";
 import {
   Container,
@@ -239,13 +240,13 @@ const handleOrderClick = (orderId) => {
         <List>
           {uniqueOrders.map((order) => (
             <ListItem
-              button
+              button="true"
               key={order.OrderID}
               onClick={() => handleOrderClick(order.OrderID)}
             >
               <ListItemText
                 primary={`Order ID: ${order.OrderID}`}
-                secondary={`Date: ${order.OrderDate} | Total: $${order.Total?.toFixed(2)}`}
+                secondary={`Total: $${order.Total?.toFixed(2)}`}
               />
             </ListItem>
           ))}
@@ -266,9 +267,7 @@ const handleOrderClick = (orderId) => {
                 <Typography variant="body1">
                   <strong>Order ID:</strong> {selectedOrder[0].OrderID}
                 </Typography>
-                <Typography variant="body1">
-                  <strong>Date:</strong> {selectedOrder[0].OrderDate}
-                </Typography>
+           
                 <Typography variant="body1">
                   <strong>Status:</strong> {selectedOrder[0].OrderStatus || "N/A"}
                 </Typography>

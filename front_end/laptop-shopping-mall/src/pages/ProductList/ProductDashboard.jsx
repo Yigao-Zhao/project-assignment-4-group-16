@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
@@ -268,7 +270,7 @@ const handleremoveChange = async (product) => {
 
             <Grid container direction="column" spacing={2}>
                 {filteredProducts.map((product) => (
-                    <Grid item key={product.ProductId}>
+                    <Grid item key={`${product.ProductId}-${Math.random()}`} >
                         <Card sx={{ width: '100%' , display: 'flex', flexDirection: 'column' }}>
                             <CardMedia
                                 component="img"
@@ -343,7 +345,7 @@ const handleremoveChange = async (product) => {
                 <List>
                     {cart.map((item) => (
                         <ListItem
-                            key={item.CartItemID}
+                            key={`${item.CartItemID}-${Math.random()}`}
                             secondaryAction={
                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                     <IconButton

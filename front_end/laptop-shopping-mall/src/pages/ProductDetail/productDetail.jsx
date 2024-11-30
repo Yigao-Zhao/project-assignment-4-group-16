@@ -12,8 +12,12 @@ import {
   Alert,
 } from "@mui/material";
 import { useLocation } from "react-router-dom";
-
+import { useAuth } from '../../context/AuthContext'; // 引入 AuthContext
+import { useNavigate } from 'react-router-dom';
+import { addItemToCart } from '../../services/cartService';
 const ProductDetail = () => {
+	const { isAuthenticated, userId} = useAuth();
+	const navigate = useNavigate();
   const location = useLocation();
   const product = location.state?.product; // 从路由状态中接收产品数据
   const [reviews, setReviews] = useState([
@@ -27,7 +31,23 @@ const ProductDetail = () => {
   const [snackbarMessage, setSnackbarMessage] = useState(""); // 提示消息
   const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // 提示类型
 
+	const handleAddToCart = async (product) => {
+		if (!isAuthenticated) {
+			console.log('User not logged in, redirecting to login page');
+			navigate('/login'); // 未登录时跳转到登录页面
+			return;
+		}
+
+		try {
+			const cartId = 101; // 示例值，根据实际需求动态设置
+			const quantity = 1;
+			await addItemToCart(userId.userId, cartId, product.ProductID, quantity);
+		} catch (error) {
+			console.error('Failed to add product to cart:', error.message);
+		}
+	};
   // 提交评论
+  
   const handleSubmitReview = () => {
     if (!rating || !newReview) {
       setSnackbarMessage("Please provide both rating and review.");
@@ -102,8 +122,16 @@ const ProductDetail = () => {
                 Price: ${product.ProductPrice}
               </Typography>
               <Typography variant="body1" sx={{ color: "green", fontWeight: "bold" }}>
-                {product.ProductStock || "In Stock"}
+                Stock: {product.ProductStock || "In Stock"}
               </Typography>
+			  <Button
+			      size="small"
+			      variant="outlined"
+			      color="secondary"
+			      onClick={() => handleAddToCart(product)}
+			  >
+			      Add to Cart
+			  </Button>
             </CardContent>
           </Card>
         </Grid>

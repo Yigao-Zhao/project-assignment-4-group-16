@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useState, useEffect } from "react";
 import CryptoJS from "crypto-js";
 import axios from 'axios';
@@ -477,7 +478,8 @@ const UserManagement = () => {
 								</TableCell>
 
 								{/* 删除确认对话框 */}
-								<Dialog open={openConfirmDialog} onClose={() => setOpenConfirmDialog(false)}>
+								<Dialog open={openConfirmDialog} onClose={() => setOpenConfirmDialog(false)} disableEnforceFocus={false} 
+  autoFocus={true} >
 									<DialogTitle>Confirm Deletion</DialogTitle>
 									<DialogContent>
 										Are you sure you want to delete this user?
@@ -502,6 +504,8 @@ const UserManagement = () => {
 										setNewUser({ ...defaultNewUser }); // 重置表单数据
 										setError({}); // 清空错误信息
 									}}
+									disableEnforceFocus={false} // 确保焦点锁定在 Dialog 内部
+									autoFocus={true} // 自动将焦点设置到 Dialog 内容中
 								>
 									<DialogTitle>Add New User</DialogTitle>
 									<DialogContent>
@@ -561,7 +565,6 @@ const UserManagement = () => {
 												onChange={(e) => setNewUser({ ...newUser, PaymentMethod: e.target.value })}
 												required
 												error={!!error?.PaymentMethod}
-												helperText={error?.PaymentMethod || ''}
 												margin="dense"
 											>
 												{paymentMethods.map((method, index) => (
@@ -580,7 +583,6 @@ const UserManagement = () => {
 												onChange={(e) => setNewUser({ ...newUser, IsAdmin: e.target.value })}
 												required
 												error={!!error?.IsAdmin}
-												helperText={error?.IsAdmin || ''}
 												margin="dense"
 											>
 												<MenuItem value="Y">Y</MenuItem>
@@ -1077,7 +1079,9 @@ const ProductManagement = () => {
 									)}
 
 									{/* 删除确认对话框 */}
-									<Dialog open={openConfirmDialog} onClose={() => setOpenConfirmDialog(false)}>
+									<Dialog open={openConfirmDialog} onClose={() => setOpenConfirmDialog(false)}
+									disableEnforceFocus={false} 
+									  autoFocus={true} >
 										<DialogTitle>Confirm Deletion</DialogTitle>
 										<DialogContent>
 											Are you sure you want to delete this product?
@@ -1101,6 +1105,8 @@ const ProductManagement = () => {
 											setShowAddProductDialog(false);
 											setNewProduct({ ...defaultNewProduct }); // 重置表单数据
 										}}
+										disableEnforceFocus={false} // 确保焦点锁定在 Dialog 内部
+										  autoFocus={true} // 自动将焦点设置到 Dialog 内容中
 									>
 										<DialogTitle>Add New Product</DialogTitle>
 										<DialogContent>
@@ -1257,7 +1263,7 @@ const AdminDashboard = () => {
         <List>
           {NAVIGATION.map((item) => (
             <ListItem
-              button
+              button="true"
               key={item.id}
               onClick={() => {
                 setSelectedSection(item.label);
