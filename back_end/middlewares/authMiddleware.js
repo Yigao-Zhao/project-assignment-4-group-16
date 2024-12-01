@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
+// Verify JWT token
 exports.verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -18,7 +19,7 @@ exports.verifyToken = (req, res, next) => {
     }
 };
 
-
+// Check if user is admin
 exports.isAdmin = (req, res, next) => {
     if (!req.user || req.user.isAdmin !== 'Y') {
         return res.status(403).json({ message: 'Access denied: Admins only' });

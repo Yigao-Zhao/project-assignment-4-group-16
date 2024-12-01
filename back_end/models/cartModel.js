@@ -1,34 +1,33 @@
 const db = require('../config/mysql');
 
 const Cart = {
-    // 增加商品到购物车
+    // add a new item to the cart
     addItem: async (userId, quantity, productId) => {
-        // 提取 userId
-        // 从 userId 对象中获取 id
+        // get CartID from UserID
     
-        // 查询 Cart 表是否存在 UserID 对应的 CartID
+        // query to check if the user has a cart
         let query = `SELECT CartID FROM Cart WHERE UserID = ?`;
         const [cartRows] = await db.query(query, [userId]);
     
         let cartId;
     
         if (cartRows.length > 0) {
-            // 如果找到记录，获取 CartID
+            // if record exists, get the CartID
             cartId = cartRows[0].CartID;
         } else {
-            // 如果没有记录，插入新的 Cart 并获取 CartID
+            // if record does not exist, create a new cart
             query = `INSERT INTO Cart (UserID) VALUES (?)`;
             console.log('SQL Query (Insert Cart):', query, [userId]);
             const [result] = await db.query(query, [userId]);
-            cartId = result.insertId; // 获取新创建的 Cart 的 ID
+            cartId = result.insertId; // get the CartID of the newly created cart
         }
     
-        // 检查 Cart_Item 表中是否已有对应的 CartID 和 ProductID
+        // check if the item already exists in the cart
         query = `SELECT Quantity FROM Cart_Item WHERE CartID = ? AND CartProductID = ?`;
         const [itemRows] = await db.query(query, [cartId, productId]);
     
         if (itemRows.length > 0) {
-            // 如果记录已存在，更新 Quantity
+            // if record exists, update the quantity
             query = `
                UPDATE Cart_Item
                SET Quantity = LEAST(Quantity + 1, (SELECT ProductStock FROM product WHERE ProductID = CartProductID))
@@ -37,7 +36,7 @@ const Cart = {
             console.log('SQL Query (Update Cart_Item):', query, [cartId, productId]);
             await db.query(query, [ cartId, productId]);
         } else {
-            // 如果记录不存在，插入新记录
+            // if record does not exist, insert a new record
             query = `
                 INSERT INTO Cart_Item (CartID, CartProductID, Quantity)
                 VALUES (?, ?, 1)
@@ -49,9 +48,9 @@ const Cart = {
         return { cartId, productId, quantity };
     },
 
-    // 删除购物车中的商品
+    // delete an item from the cart
     removeItem: async (userId,a, productId) => {
-        // 查询 CartID
+        // get CartID from UserID
 		console.log(a)
 		console.log(productId)
 		console.log(userId)
@@ -68,7 +67,7 @@ const Cart = {
     
         const cartId = cartRows[0].CartID;
 		
-        // 查询当前 Quantity
+        // query the quantity of the item in the cart
         query = `
             SELECT Quantity 
             FROM Cart_Item
@@ -83,7 +82,7 @@ const Cart = {
         const currentQuantity = itemRows[0].Quantity;
     
         if (currentQuantity > 1) {
-            // 如果数量大于 1，则减少数量
+            // if quantity is greater than 1, decrease the quantity by 1
             query = `
                 UPDATE Cart_Item
                 SET Quantity = Quantity - 1
@@ -96,7 +95,7 @@ const Cart = {
                 affectedRows: updateResult.affectedRows,
             };
         } else {
-            // 如果数量等于 1，则删除记录
+            // if quantity is 1, delete the item from the cart
             query = `
                 DELETE FROM Cart_Item
                 WHERE CartID = ? AND CartProductID = ?
@@ -110,7 +109,7 @@ const Cart = {
         }
     },
 
-    // 更新商品数量
+    // update the quantity of an item in the cart
     updateQuantity: async (userId, cartId, productId, quantity) => {
         const query = `
             UPDATE Cart_Item
@@ -124,7 +123,7 @@ const Cart = {
         return { success: true, message: 'Quantity updated successfully' };
     },
 
-    // 根据用户ID查询购物车及商品
+    // get all items in the cart by UserID
     getCartByUserId: async (userId) => {
         const query = `
             SELECT ci.CartItemID, ci.CartID, ci.CartProductID, ci.Quantity, 

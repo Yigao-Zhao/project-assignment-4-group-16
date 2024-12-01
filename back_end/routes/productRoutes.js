@@ -3,16 +3,16 @@ const ProductController = require('../controllers/productController');
 const { verifyToken, isAdmin } = require('../middlewares/authMiddleware');
 const router = express.Router();
 
-// 获取所有产品
+// get all products
 router.get('/products', ProductController.getAllProducts);
 
-// 更新产品信息
+// update product by id
 router.put('/products/:id', ProductController.updateProduct);
 
-// 删除产品
+// delete product by id
 router.delete('/products/:id', ProductController.deleteProduct);
 
-// 添加新产品
+// add product
 router.post('/products', ProductController.addProduct);
 
 module.exports = router;

@@ -2,7 +2,7 @@ const Product = require('../models/productModel');
 
 const ProductService = {
 
-    // 获取所有产品
+    // get all products
     getAllProducts: async () => {
         try {
             const products = await Product.getAllProducts();
@@ -16,7 +16,7 @@ const ProductService = {
         }
     },
 
-    // 获取单个产品
+    // get product by id
     getProductById: async (productId) => {
         try {
             const product = await Product.getProductById(productId);
@@ -30,7 +30,7 @@ const ProductService = {
         }
     },
 
-    // 更新产品
+    // update product
     updateProduct: async (productId, productData) => {
         try {
             const result = await Product.updateProduct(productId, productData);
@@ -44,7 +44,7 @@ const ProductService = {
         }
     },
 
-    // 删除产品
+    // delete product
     deleteProduct: async (productId) => {
         try {
             const result = await Product.deleteProduct(productId);
@@ -58,7 +58,7 @@ const ProductService = {
         }
     },
 
-    // 添加产品
+    // add product
     addProduct: async (productData) => {
         try {
             const result = await Product.addProduct(productData);
