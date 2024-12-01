@@ -30,9 +30,9 @@ const Cart = {
         if (itemRows.length > 0) {
             // 如果记录已存在，更新 Quantity
             query = `
-                UPDATE Cart_Item
-                SET Quantity = Quantity + 1
-                WHERE CartID = ? AND CartProductID = ?
+               UPDATE Cart_Item
+               SET Quantity = LEAST(Quantity + 1, (SELECT ProductStock FROM product WHERE ProductID = CartProductID))
+               WHERE CartID = ? AND CartProductID = ?
             `;
             console.log('SQL Query (Update Cart_Item):', query, [cartId, productId]);
             await db.query(query, [ cartId, productId]);
