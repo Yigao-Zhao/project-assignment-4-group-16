@@ -1,13 +1,14 @@
 const jwt = require('jsonwebtoken');
-//const bcrypt = require('bcrypt'); // 用于密码加密和验证
+//const bcrypt = require('bcrypt'); // include bcrypt to hash passwords
 const User = require('../models/userModel');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
-const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '1h'; // 设置JWT默认有效期
+const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '1h'; // set the expiration time for the token
 
 const UserService = {
+    // login user
     login: async (email, password) => {
-        // 查找用户
+        // find user by email
         const user = await User.findByEmail(email);
         if (!user) {
             throw new Error('Invalid email or password');
@@ -16,7 +17,7 @@ const UserService = {
         if (password !== user.MyPassword) {
             throw new Error('Invalid email or password');
         }
-        // 生成JWT token
+        // generate JWT token
         const token = jwt.sign(
             { id: user.UserID, email: user.Email, isAdmin: user.IsAdmin },
             JWT_SECRET,
@@ -26,7 +27,7 @@ const UserService = {
         return { token, user };
     },
 
-    // 获取所有用户
+    // get all users
     getAllUsers: async () => {
         try {
             const users = await User.getAllUsers();
@@ -37,7 +38,7 @@ const UserService = {
         }
     },
 
-    // 更新用户
+    // update user by ID
     updateUserById: async (userId, userData) => {
         try {
 			console.log(123)
@@ -54,6 +55,8 @@ const UserService = {
             throw new Error('Failed to update user');
         }
     },
+
+    //get user by ID
 	getUserById: async (userId) => {
 	    try {
 	        const result = await User.getUserById(userId);
@@ -67,22 +70,22 @@ const UserService = {
 	    }
 	},
 
-    // 删除用户
+    // delete user by ID
     deleteUserById: async (userId) => {
         try {
-            // 确保 userId 是有效的（例如，数字或字符串）
+            // check if userId is a string or number
             if (typeof userId !== 'string' && typeof userId !== 'number') {
                 throw new Error('Invalid userId type');
             }
             console.log("Attempting to delete user with ID:", userId);
             const response = await User.deleteUserById(userId);
             console.log("Response from deleteUserById:", response);
-            // 如果后端删除成功，返回一个成功消息
+            
             if (response.success) {
                 console.log('User deleted successfully');
-                return { success: true }; // 返回删除成功的标志
+                return { success: true }; // if user is successfully deleted
             } else {
-                // 如果后端返回失败，抛出一个错误
+                // if user not found or already deleted
                 throw new Error('Failed to delete user. Response was not successful.');
             }
         } catch (err) {
@@ -91,22 +94,21 @@ const UserService = {
         }
     },
 
-    // 创建用户
+    // create user
     createUser: async (userData) => {
-        // 先检查邮箱是否已存在
+        // check if email already exists
         const emailExists = await User.checkEmailExists(userData.Email);
         if (emailExists) {
             throw new Error('Email already exists');
         }
 
-        // 加密密码
-        //const hashedPassword = await bcrypt.hash(userData.MyPassword, 10);
+        // hash the password
         hashedPassword=userData.MyPassword;
-        // 将用户数据插入数据库
+        // add user to database
         try {
             const newUserData = {
                 ...userData,
-                MyPassword: hashedPassword, // 使用加密后的密码
+                MyPassword: hashedPassword, // store hashed password
             };
             const result = await User.createUser(newUserData);
             return result;
@@ -116,7 +118,7 @@ const UserService = {
         }
     },
 
-    // 检查邮箱是否存在
+    // check if email exists
     checkEmailExists: async (email) => {
         return await User.checkEmailExists(email);
     }

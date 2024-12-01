@@ -10,7 +10,7 @@ cd project-assignment-4-group-16/back_end
 npm install
 
 echo "Starting the back-end server..."
-node server.js &  # 后台运行
+node server.js &  # Run the server in the background
 
 echo "Setting up front-end..."
 cd ../../front_end/laptop-shopping-mall

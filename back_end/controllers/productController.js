@@ -2,83 +2,83 @@ const ProductService = require('../services/productService');
 
 const ProductController = {
 
-    // 获取所有产品
+    // get all products
     getAllProducts: async (req, res) => {
         try {
-            const result = await ProductService.getAllProducts(); // 调用 service 层获取产品
+            const result = await ProductService.getAllProducts(); // call service layer to get all products
             if (result.success) {
-                res.status(200).json(result); // 成功时返回 200 状态码，并将数据返回给客户端
+                res.status(200).json(result); // return 200 status code and products data
             } else {
-                res.status(404).json({ success: false, message: result.message }); // 如果没有找到产品，返回 404 错误
+                res.status(404).json({ success: false, message: result.message }); // return 404 error if no products found
             }
         } catch (err) {
             console.error('Error fetching products:', err);
-            res.status(500).json({ success: false, message: err.message }); // 捕获错误并返回 500 错误码
+            res.status(500).json({ success: false, message: err.message }); // catch error and return 500 error code
         }
     },
 
-    // 获取单个产品
+    // get product by id
     getProductById: async (req, res) => {
         const productId = req.params.id;
         try {
-            const result = await ProductService.getProductById(productId); // 调用 service 层获取单个产品
+            const result = await ProductService.getProductById(productId); // call service layer to get product by id
             if (result.success) {
-                res.status(200).json(result); // 成功时返回 200 状态码，并返回产品数据
+                res.status(200).json(result); // return 200 status code and product data
             } else {
-                res.status(404).json({ success: false, message: result.message }); // 如果没有找到产品，返回 404 错误
+                res.status(404).json({ success: false, message: result.message }); // return 404 error if product not found
             }
         } catch (err) {
             console.error('Error fetching product:', err);
-            res.status(500).json({ success: false, message: err.message }); // 捕获错误并返回 500 错误码
+            res.status(500).json({ success: false, message: err.message }); // catch error and return 500 error code
         }
     },
 
-    // 更新产品
+    // update product
     updateProduct: async (req, res) => {
         const productId = req.params.id;
         const productData = req.body;
         try {
-            const result = await ProductService.updateProduct(productId, productData); // 调用 service 层更新产品
+            const result = await ProductService.updateProduct(productId, productData); // call service layer to update product
             if (result.success) {
-                res.status(200).json(result); // 成功时返回 200 状态码，并返回更新成功的信息
+                res.status(200).json(result); // return 200 status code and success message
             } else {
-                res.status(404).json({ success: false, message: result.message }); // 如果没有找到产品，返回 404 错误
+                res.status(404).json({ success: false, message: result.message }); // return 404 error if product not found
             }
         } catch (err) {
             console.error('Error updating product:', err);
-            res.status(500).json({ success: false, message: err.message }); // 捕获错误并返回 500 错误码
+            res.status(500).json({ success: false, message: err.message }); // catch error and return 500 error code
         }
     },
 
-    // 删除产品
+    // delete product
     deleteProduct: async (req, res) => {
         const productId = req.params.id;
         try {
-            const result = await ProductService.deleteProduct(productId); // 调用 service 层删除产品
+            const result = await ProductService.deleteProduct(productId); // call service layer to delete product
             if (result.success) {
-                res.status(200).json(result); // 成功时返回 200 状态码，并返回删除成功的信息
+                res.status(200).json(result); // return 200 status code and success message
             } else {
-                res.status(404).json({ success: false, message: result.message }); // 如果没有找到产品，返回 404 错误
+                res.status(404).json({ success: false, message: result.message }); // return 404 error if product not found
             }
         } catch (err) {
             console.error('Error deleting product:', err);
-            res.status(500).json({ success: false, message: err.message }); // 捕获错误并返回 500 错误码
+            res.status(500).json({ success: false, message: err.message }); // catch error and return 500 error code
         }
     },
 
-    // 添加产品
+    // add product
     addProduct: async (req, res) => {
         const productData = req.body;
         try {
-            const result = await ProductService.addProduct(productData); // 调用 service 层添加产品
+            const result = await ProductService.addProduct(productData); // call service layer to add product
             if (result.success) {
-                res.status(201).json(result); // 成功时返回 201 状态码，并返回新创建的产品数据
+                res.status(201).json(result); // return 201 status code and success message
             } else {
-                res.status(400).json({ success: false, message: result.message }); // 如果发生错误，返回 400 错误
+                res.status(400).json({ success: false, message: result.message }); // return 400 error if product data is invalid
             }
         } catch (err) {
             console.error('Error adding product:', err);
-            res.status(500).json({ success: false, message: err.message }); // 捕获错误并返回 500 错误码
+            res.status(500).json({ success: false, message: err.message }); // catch error and return 500 error code
         }
     }
 

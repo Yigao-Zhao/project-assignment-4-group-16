@@ -1,9 +1,9 @@
 const db = require('../config/mysql');
-const { sendEmail } = require('../utils/emailService'); // 引入邮件服务模块
+const { sendEmail } = require('../utils/emailService'); // import the sendEmail function
 
 const Order = {
 	addOrder: async (userId, items, cardDetails) => {
-	    // 假装校验银行卡信息
+	    // check if card details are provided
 	    if (!cardDetails || !cardDetails.number || !cardDetails.expiry || !cardDetails.cvv) {
 	    }
 	    console.log(1);
@@ -76,7 +76,7 @@ const Order = {
 	    await db.query(deleteCartItemsQuery, [items]);
 	    console.log(6);
 	
-	    // 发送邮件
+	    // send order confirmation email
 	    const emailContent = `
 	        <h1>Thank you for your order!</h1>
 	        <p>Your order ID is: ${orderId}</p>
@@ -107,6 +107,8 @@ const Order = {
 	        orderItems,
 	    };
 	},
+
+	// get order by user ID
 	getOrderByUserId: async (userId) => {
 	        const query = `
 	            SELECT o.*, oi.*, p.*

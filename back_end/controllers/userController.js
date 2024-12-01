@@ -1,11 +1,10 @@
 const UserService = require('../services/userService');
 
 const UserController = {
-
+    // login user
     login: async (req, res) => {
         const { email, password } = req.body;
         try {
-            // 登录逻辑
             const { token, user } = await UserService.login(email, password);
 			if(user.MiddleName != null){
 				midname = user.MiddleName
@@ -26,13 +25,14 @@ const UserController = {
 
         } catch (err) {
             console.error("Login error: ", err.message);
-            // 登录失败，返回401 Unauthorized
+            // return error message
             res.status(401).json({
                 success: false, message: 'Invalid email or password',
             });
         }
     },
-
+    
+    // get all users
     getAllUsers: async (req, res) => {
         try {
             const users = await UserService.getAllUsers();
@@ -44,6 +44,7 @@ const UserController = {
         }
     },
 
+    // get user by id
     getUserById: async (req, res) => {
         const { userId } = req.params;
         try {
@@ -67,6 +68,7 @@ const UserController = {
         }
     },
 
+    // create user
     createUser: async (req, res) => {
         const userData = req.body;
         try {
@@ -81,6 +83,7 @@ const UserController = {
         }
     },
 
+    // update user
     updateUser: async (req, res) => {
         const userId = req.params.userId;
         const userData = req.body;
@@ -92,6 +95,7 @@ const UserController = {
         }
     },
 
+    // delete user
     deleteUser: async (req, res) => {
         const userId = req.params.id;
         try {
@@ -102,6 +106,7 @@ const UserController = {
         }
     },
 
+    // check if email exists
     checkEmailExists: async (req, res) => {
         const { email } = req.query;
         try {

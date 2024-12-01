@@ -3,11 +3,10 @@ const OrderController = require('../controllers/orderController');
 const { verifyToken } = require('../middlewares/authMiddleware'); 
 const router = express.Router();
 
-// // 获取用户的购物车
-// router.get('/order/:userId', verifyToken, CartController.getCartByUserId);
-
-// 生成订单
+// Add order
 router.post('/order/payment', verifyToken, OrderController.addOrder);
+
+// Get order by user id
 router.get('/order/:userId', verifyToken, OrderController.getOrderByUserId);
 
 
