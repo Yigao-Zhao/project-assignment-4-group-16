@@ -56,12 +56,12 @@ const UserManagement = () => {
 
 	const [users, setUsers] = useState([]);
 	const [error, setError] = useState({});
-	const [openSnackbar, setOpenSnackbar] = useState(false);  // Snackbar 显示状态
-	const [snackbarMessage, setSnackbarMessage] = useState(''); // 显示的提示消息
-	const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 控制 Snackbar 类型（成功或错误
-	const [openConfirmDialog, setOpenConfirmDialog] = useState(false); // 控制确认删除对话框
-	const [userToDelete, setUserToDelete] = useState(null); // 存储待删除的userID
-	const [showAddUserDialog, setShowAddUserDialog] = useState(false); // 控制 Add User 弹窗显示
+	const [openSnackbar, setOpenSnackbar] = useState(false);  // Snackbar 
+	const [snackbarMessage, setSnackbarMessage] = useState(''); // notification state
+	const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // control Snackbar success or false
+	const [openConfirmDialog, setOpenConfirmDialog] = useState(false); // control confirm to delete dialog
+	const [userToDelete, setUserToDelete] = useState(null); // store userID ready to be removed
+	const [showAddUserDialog, setShowAddUserDialog] = useState(false); //  Add User dialog control
 
 	const defaultNewUser = {
 		FirstName: '',
@@ -74,24 +74,24 @@ const UserManagement = () => {
 		IsAdmin: 'N', // Default to non-admin
 	};
 
-	const [newUser, setNewUser] = useState({ ...defaultNewUser }); // 新用户的默认值
+	const [newUser, setNewUser] = useState({ ...defaultNewUser }); // default value for new user
 
-	// 编辑状态控制
+	// edit control state
 	const [editUserId, setEditUserId] = useState(null);
 
 	const [tempEditedUser, setTempEditedUser] = useState(null);
 
 	const handleEditClick = (user) => {
 		setTempEditedUser({
-			...user, // 传入当前用户的所有数据
-			OriginalEmail: user.Email // 保存用户原始的邮箱
+			...user, // all data of user
+			OriginalEmail: user.Email // save original email
 		});
-		setEditUserId(user.UserID); // 设置正在编辑的用户ID
+		setEditUserId(user.UserID); // set user ID who is editing
 	};
 
 	const handleCancelClick = () => {
-		setEditUserId(null); // 退出编辑模式
-		setTempEditedUser(null); // 清除临时编辑数据
+		setEditUserId(null); // exit edit mode
+		setTempEditedUser(null); // temp data delete
 	};
 
 	const handleTempUserEdit = (field, value) => {
@@ -101,7 +101,7 @@ const UserManagement = () => {
 	const validateUser = (user) => {
 		const errors = {};
 
-		// 姓名字段校验
+		// name check
 		if (!user.FirstName) {
 			errors.FirstName = "First name is required.";
 		}
@@ -110,12 +110,12 @@ const UserManagement = () => {
 			errors.LastName = "Last name is required.";
 		}
 
-		// 地址字段校验
+		// address check
 		if (!user.Address) {
 			errors.Address = "Address is required.";
 		}
 
-		// 邮箱校验
+		// email check
 		const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 		if (!user.Email) {
 			errors.Email = "Email is required.";
@@ -123,27 +123,27 @@ const UserManagement = () => {
 			errors.Email = "Invalid email format.";
 		}
 
-		// 支付方式校验
+		// payment check
 		if (!user.PaymentMethod) {
 			errors.PaymentMethod = "Payment method is required.";
 		}
 
-		// 支付方式校验
+		// password check
 		if (!user.MyPassword) {
 			errors.MyPassword = "Password is required.";
 		}
-		// 管理员标志校验
+		// is admin check
 		if (!user.IsAdmin) {
 			errors.IsAdmin = "IsAdmin is required.";
 		}
 
-		return errors;  // 返回包含错误信息的对象
+		return errors;  
 	};
 
 	const checkEmailExists = async (email) => {
 		try {
 			const response = await axios.get(`http://localhost:5005/api/user/check-email?email=${email}`);
-			return response.data.exists;  // 如果邮箱存在，则返回 true
+			return response.data.exists;  
 		} catch (error) {
 			console.error('Error checking email:', error);
 			return false;
@@ -160,14 +160,14 @@ const UserManagement = () => {
 			console.log("Validation failed:", validationError);
 			setError(validationError);
 			const errorMessages = Object.values(validationError).join(', ');
-			setSnackbarMessage(errorMessages);  // 设置错误消息
-			setSnackbarSeverity('error');  // 设置错误类型
-			setOpenSnackbar(true); // 显示 Snackbar
+			setSnackbarMessage(errorMessages);  
+			setSnackbarSeverity('error');  // set error type
+			setOpenSnackbar(true); // show Snackbar
 			return;
 		}
 
-		// 检查邮箱是否唯一，只在邮箱被修改时执行
-		if (tempEditedUser.Email !== tempEditedUser.OriginalEmail) { // 需要在tempEditedUser中记录原始邮箱
+		// check email unique
+		if (tempEditedUser.Email !== tempEditedUser.OriginalEmail) { // tempEditedUser record original email
 			const emailExists = await checkEmailExists(tempEditedUser.Email);
 			if (emailExists) {
 				setSnackbarMessage('Email already exists.');
@@ -179,35 +179,35 @@ const UserManagement = () => {
 
 		try {
 			tempEditedUser.MyPassword = CryptoJS.SHA256(tempEditedUser.MyPassword).toString();
-			// 调用后端 API 更新user
+			// BACKEND update
 			const response = await axios.put(`http://localhost:5005/api/user/users/${editUserId}`, tempEditedUser);
-			console.log(response.data.message); // 打印成功消息
-			setSnackbarMessage('User saved successfully!');  // 设置成功消息
-			setSnackbarSeverity('success');  // 设置成功类型
-			setOpenSnackbar(true); // 显示提示
+			console.log(response.data.message); 
+			setSnackbarMessage('User saved successfully!');  
+			setSnackbarSeverity('success');  
+			setOpenSnackbar(true); 
 
 			setUsers((prev) =>
 				prev.map((user) =>
 					user.UserID === tempEditedUser.UserID
-						? { ...user, ...tempEditedUser } // 合并未编辑的字段
+						? { ...user, ...tempEditedUser } // string not edit
 						: user
 				)
 			);
 
-			setEditUserId(null); // 退出编辑模式
-			setTempEditedUser(null); // 清空临时状态
+			setEditUserId(null); 
+			setTempEditedUser(null);
 
 		} catch (error) {
 			console.error('Error saving user:', error);
-			setSnackbarMessage('Failed to save user'); // 设置错误消息
-			setSnackbarSeverity('error');  // 设置错误类型
-			setOpenSnackbar(true);  // 显示错误消息
+			setSnackbarMessage('Failed to save user'); 
+			setSnackbarSeverity('error');  
+			setOpenSnackbar(true);  
 		}
 	};
 
 	const handleConfirmDelete = (userId) => {
-		setUserToDelete(userId); // 设置待删除的userID
-		setOpenConfirmDialog(true); // 打开删除确认对话框
+		setUserToDelete(userId); // set userID ready to delete
+		setOpenConfirmDialog(true); 
 	};
 
 
@@ -218,12 +218,12 @@ const UserManagement = () => {
 			console.log('Response from deleteUser:', response.data);
 			if (response.data.success) {
 				setUsers((prev) => prev.filter((user) => user.UserID !== id));
-				setOpenConfirmDialog(false); // 关闭确认对话框
+				setOpenConfirmDialog(false); 
 				setSnackbarMessage('User deleted successfully!');
 				setSnackbarSeverity('success');
 				setOpenSnackbar(true);
 
-				// 更新本地状态
+			
 				//setUsers((prev) => prev.filter((user) => user.UserID !== id));
 			} else {
 				throw new Error(response.data.message || 'Failed to delete user');
@@ -238,21 +238,20 @@ const UserManagement = () => {
 
 
 	const handleAddUser = async () => {
-		const validationError = validateUser(newUser); // 使用通用的校验函数
+		const validationError = validateUser(newUser); 
 		if (Object.keys(validationError).length > 0) {
 			console.log("Validation failed:", validationError);
 
-			// 更新错误信息状态
+		
 			setError(validationError);
 
-			// 显示错误消息
 			setSnackbarMessage("Please correct the errors before submitting.");
 			setSnackbarSeverity('error');
-			setOpenSnackbar(true); // 显示 Snackbar
+			setOpenSnackbar(true); // show Snackbar
 			return;
 		}
 
-		// 在保存之前先校验邮箱是否唯一
+		// check email unique
 		const emailExists = await checkEmailExists(newUser.Email);
 		if (emailExists) {
 			setSnackbarMessage('Email already exists.');
@@ -270,13 +269,13 @@ const UserManagement = () => {
 				setSnackbarSeverity('success');
 				setOpenSnackbar(true);
 
-				// 更新用户列表
+				// update userlist
 				setUsers((prevUsers) => [
 					...prevUsers,
-					{ ...newUser, UserID: response.data.userId } // 添加新用户到列表
+					{ ...newUser, UserID: response.data.userId } //insert new user to list
 				]);
-				setShowAddUserDialog(false); // 关闭添加用户对话框
-				setNewUser({ ...defaultNewUser }); // 清空表单数据
+				setShowAddUserDialog(false); 
+				setNewUser({ ...defaultNewUser }); 
 			} else {
 				throw new Error(response.data.message || 'Failed to add user.');
 			}
@@ -293,7 +292,7 @@ const UserManagement = () => {
 		try {
 			const response = await fetchUsers();
 			if (response && Array.isArray(response.users)) {
-				setUsers(response.users); // 假设返回的对象中包含 users 数组
+				setUsers(response.users); //  users array
 			} else {
 				throw new Error('Unexpected response format');
 			}
@@ -305,7 +304,7 @@ const UserManagement = () => {
 
 	useEffect(() => {
 		if (showAddUserDialog) {
-			setError(''); // 清空错误信息
+			setError(''); 
 		}
 		handleFetchUsers();
 	}, [showAddUserDialog]);
@@ -347,7 +346,7 @@ const UserManagement = () => {
 								<TableCell>
 									{editUserId === user.UserID ? (
 										<TextField
-											value={tempEditedUser?.FirstName || ''} // 临时保存的值
+											value={tempEditedUser?.FirstName || ''} // temp
 											onChange={(e) =>
 												handleTempUserEdit('FirstName', e.target.value)
 											}
@@ -408,8 +407,8 @@ const UserManagement = () => {
 									{editUserId === user.UserID ? (
 										<FormControl fullWidth>
 											<Select
-												value={tempEditedUser?.PaymentMethod || ''} // 临时保存选中的值
-												onChange={(e) => handleTempUserEdit('PaymentMethod', e.target.value)}// 更新临时状态
+												value={tempEditedUser?.PaymentMethod || ''} // temp select value
+												onChange={(e) => handleTempUserEdit('PaymentMethod', e.target.value)}
 											>
 												{paymentMethods.map((method, index) => (
 													<MenuItem key={index} value={method}>
@@ -419,15 +418,15 @@ const UserManagement = () => {
 											</Select>
 										</FormControl>
 									) : (
-										user.PaymentMethod // 显示最终保存的支付方式
+										user.PaymentMethod 
 									)}
 								</TableCell>
 								<TableCell>
 									{editUserId === user.UserID ? (
 										<FormControl fullWidth>
 											<Select
-												value={tempEditedUser?.IsAdmin || ''} // 临时保存选中的值
-												onChange={(e) => handleTempUserEdit('IsAdmin', e.target.value)}// 更新临时状态
+												value={tempEditedUser?.IsAdmin || ''} 
+												onChange={(e) => handleTempUserEdit('IsAdmin', e.target.value)}
 											>
 												{isadmins.map((method, index) => (
 													<MenuItem key={index} value={method}>
@@ -477,7 +476,7 @@ const UserManagement = () => {
 									)}
 								</TableCell>
 
-								{/* 删除确认对话框 */}
+								{/* delete confirm dialog */}
 								<Dialog open={openConfirmDialog} onClose={() => setOpenConfirmDialog(false)} disableEnforceFocus={false} 
   autoFocus={true} >
 									<DialogTitle>Confirm Deletion</DialogTitle>
@@ -489,7 +488,7 @@ const UserManagement = () => {
 											Cancel
 										</Button>
 										<Button
-											onClick={() => handleDeleteUser(user.UserID)} // 直接传递 userId
+											onClick={() => handleDeleteUser(user.UserID)} // transfer userId
 											color="secondary"
 											variant="contained"
 										>
@@ -501,11 +500,11 @@ const UserManagement = () => {
 								<Dialog open={showAddUserDialog}
 									onClose={() => {
 										setShowAddUserDialog(false);
-										setNewUser({ ...defaultNewUser }); // 重置表单数据
-										setError({}); // 清空错误信息
+										setNewUser({ ...defaultNewUser }); // reset data
+										setError({}); 
 									}}
-									disableEnforceFocus={false} // 确保焦点锁定在 Dialog 内部
-									autoFocus={true} // 自动将焦点设置到 Dialog 内容中
+									disableEnforceFocus={false} 
+									autoFocus={true} 
 								>
 									<DialogTitle>Add New User</DialogTitle>
 									<DialogContent>
@@ -606,7 +605,7 @@ const UserManagement = () => {
 											onClick={() => {
 												setShowAddUserDialog(false);
 												setNewUser({ ...defaultNewUser });
-												setError({}); // 关闭时清空错误信息
+												setError({}); 
 											}}
 										>
 											Cancel
@@ -632,10 +631,10 @@ const UserManagement = () => {
 			>
 				<Alert
 					onClose={() => setOpenSnackbar(false)}
-					severity={snackbarSeverity} // 根据错误或成功显示不同颜色
+					severity={snackbarSeverity} // colour for Success of Fail
 					sx={{ width: '100%' }}
 				>
-					{snackbarMessage}  {/* 显示提示消息 */}
+					{snackbarMessage}  {/* notification */}
 				</Alert>
 			</Snackbar>
 		</Box>
@@ -649,15 +648,15 @@ const ProductManagement = () => {
 
 	const [products, setProducts] = useState([]);
 	const [error, setError] = useState('');
-	const [openSnackbar, setOpenSnackbar] = useState(false);  // Snackbar 显示状态
+	const [openSnackbar, setOpenSnackbar] = useState(false);  
 	const [editProductId, setEditProductId] = useState(null);
-	const [snackbarMessage, setSnackbarMessage] = useState(''); // 显示的提示消息
-	const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 控制 Snackbar 类型（成功或错误）
-	const [openConfirmDialog, setOpenConfirmDialog] = useState(false); // 控制确认删除对话框
-	const [productToDelete, setProductToDelete] = useState(null); // 存储待删除的产品ID
-	const [tempEditedProduct, setTempEditedProduct] = useState(null); // 临时保存编辑的产品数据
+	const [snackbarMessage, setSnackbarMessage] = useState(''); 
+	const [snackbarSeverity, setSnackbarSeverity] = useState('success'); 
+	const [openConfirmDialog, setOpenConfirmDialog] = useState(false); 
+	const [productToDelete, setProductToDelete] = useState(null); 
+	const [tempEditedProduct, setTempEditedProduct] = useState(null); 
 
-	const [showAddProductDialog, setShowAddProductDialog] = useState(false); // 控制 Add User 弹窗显示
+	const [showAddProductDialog, setShowAddProductDialog] = useState(false); 
 
 	const defaultNewProduct = {
 
@@ -669,13 +668,13 @@ const ProductManagement = () => {
 		ProductStock: '',
 	};
 
-	const [newProduct, setNewProduct] = useState(defaultNewProduct); // 新产品的默认值
+	const [newProduct, setNewProduct] = useState(defaultNewProduct); // default value
 
 
 	const handleProductCancel = () => {
-		// 取消编辑时，恢复原始数据
+	
 		setEditProductId(null);
-		setTempEditedProduct(null); // 清除临时保存的编辑数据
+		setTempEditedProduct(null);
 	};
 
 	const handleTempProductEdit = (field, value) => {
@@ -685,20 +684,20 @@ const ProductManagement = () => {
 
 	const handleEditClick = (product) => {
 		setEditProductId(product.ProductID);
-		setTempEditedProduct({ ...product }); // 将product数据复制到临时状态
+		setTempEditedProduct({ ...product }); // product reatore to temp
 	};
 
 	const validateImageOnServer = async (imagePath) => {
 		try {
 			const response = await fetch(`http://localhost:5005/images/${imagePath}`, { method: 'HEAD' });
 			if (response.ok) {
-				return true; // 图片存在
+				return true; 
 			} else {
-				return false; // 图片不存在
+				return false;
 			}
 		} catch (error) {
 			console.error('检查图片时出错:', error);
-			return false; // 请求失败则认为图片不存在
+			return false; 
 		}
 	};
 
@@ -731,12 +730,12 @@ const ProductManagement = () => {
 		if (isNaN(stock) || stock <= 0 || !Number.isInteger(stock)) {
 			errors.ProductStock = "Product stock must be a positive integer.";
 		}
-		return errors; // 返回 null 表示没有错误
+		return errors; // null = no problems
 	};
 
 	const handleProductSave = async () => {
 		if (!tempEditedProduct) return;
-		// 验证产品数据
+		// quantity check
 
 		const validationError = await validateProduct(tempEditedProduct);
 
@@ -744,31 +743,31 @@ const ProductManagement = () => {
 			console.log("Validation failed:", validationError);
 			setError(validationError);
 			const errorMessages = Object.values(validationError).join(', ');
-			setSnackbarMessage(errorMessages);  // 设置错误消息
-			setSnackbarSeverity('error');  // 设置错误类型
-			setOpenSnackbar(true); // 显示 Snackbar
+			setSnackbarMessage(errorMessages);  
+			setSnackbarSeverity('error');  
+			setOpenSnackbar(true); 
 			return;
 		}
 
 		try {
-			// 调用后端 API 更新产品
+			//  API update product
 			const response = await axios.put(`http://localhost:5005/api/product/products/${editProductId}`, tempEditedProduct);
 
-			console.log(response.data.message); // 打印成功消息
-			setSnackbarMessage('Product saved successfully!');  // 设置成功消息
-			setSnackbarSeverity('success');  // 设置成功类型
-			setOpenSnackbar(true); // 显示提示
-			setEditProductId(null); // 退出编辑模式
-			setTempEditedProduct(null); // 清除临时编辑数据
-			// 重新获取产品列表
+			console.log(response.data.message); 
+			setSnackbarMessage('Product saved successfully!');  
+			setSnackbarSeverity('success');  
+			setOpenSnackbar(true);
+			setEditProductId(null); 
+			setTempEditedProduct(null); 
+			// get list again
 			handleFetchProducts();
 		} catch (error) {
 			console.error('Error saving product:', error);
 			const errorMessage = error.response?.data?.message || 'Failed to save product';
 			console.error('Error saving product:', errorMessage);
-			setSnackbarMessage(errorMessage); // 设置错误消息
-			setSnackbarSeverity('error');  // 设置错误类型
-			setOpenSnackbar(true);  // 显示错误消息
+			setSnackbarMessage(errorMessage); 
+			setSnackbarSeverity('error');  
+			setOpenSnackbar(true);  
 		}
 	};
 
@@ -778,12 +777,12 @@ const ProductManagement = () => {
 			const response = await axios.delete(`http://localhost:5005/api/product/products/${productToDelete}`);
 			if (response.data.success) {
 				setProducts((prev) => prev.filter((product) => product.ProductID !== productToDelete));
-				setOpenConfirmDialog(false); // 关闭确认对话框
+				setOpenConfirmDialog(false); 
 				setSnackbarMessage('Product deleted successfully!');
 				setSnackbarSeverity('success');
 				setOpenSnackbar(true);
 
-				// 更新本地状态
+				
 				setProducts((prev) => prev.filter((product) => product.ProductID !== id));
 			} else {
 				throw new Error(response.data.message || 'Failed to delete product');
@@ -797,23 +796,23 @@ const ProductManagement = () => {
 	};
 
 	const handleConfirmDelete = (productId) => {
-		setProductToDelete(productId); // 设置待删除的产品ID
-		setOpenConfirmDialog(true); // 打开删除确认对话框
+		setProductToDelete(productId);
+		setOpenConfirmDialog(true); 
 	};
 
 	const handleAddProduct = async () => {
-		const validationError = await validateProduct(newProduct); // 使用通用的校验函数
+		const validationError = await validateProduct(newProduct); 
 		if (Object.keys(validationError).length > 0) {
 			console.log("Validation failed:", validationError);
 
-			// 更新错误信息状态
+		
 			setError(validationError);
 
-			// 显示错误消息
+			
 			//const errorMessages = Object.values(validationError).join(', ');
 			setSnackbarMessage('Please correct the errors before submitting.');
 			setSnackbarSeverity('error');
-			setOpenSnackbar(true); // 显示 Snackbar
+			setOpenSnackbar(true); // show Snackbar
 			return;
 		}
 
@@ -825,13 +824,13 @@ const ProductManagement = () => {
 				setSnackbarSeverity('success');
 				setOpenSnackbar(true);
 
-				// 更新product列表
+				// update product list
 				setProducts((prevProducts) => [
 					...prevProducts,
-					{ ...newProduct, ProductID: response.data.productId } // 添加新product到列表
+					{ ...newProduct, ProductID: response.data.productId } // new product to list
 				]);
-				setShowAddProductDialog(false); // 关闭添加product对话框
-				setNewProduct({ ...defaultNewProduct }); // 清空表单数据
+				setShowAddProductDialog(false); 
+				setNewProduct({ ...defaultNewProduct });
 
 			} else {
 				throw new Error(response.data.message || 'Failed to add product.');
@@ -850,7 +849,7 @@ const ProductManagement = () => {
 			const response = await fetchProducts();
 			console.log('Response from fetchProducts:', response);
 			if (response && Array.isArray(response.products)) {
-				setProducts(response.products); // 假设返回的对象中包含 products 数组
+				setProducts(response.products); 
 			} else {
 				throw new Error('Unexpected response format');
 			}
@@ -879,7 +878,7 @@ const ProductManagement = () => {
 	                const canvas = document.createElement('canvas');
 	                const ctx = canvas.getContext('2d');
 	
-	                // 设置最大宽度和高度，保持图片比例
+	                //picture ratio
 	                const maxWidth = 800;
 	                const maxHeight = 800;
 	                let width = img.width;
@@ -897,7 +896,7 @@ const ProductManagement = () => {
 	                canvas.height = height;
 	                ctx.drawImage(img, 0, 0, width, height);
 	
-	                // 将图片转换为 Base64 数据
+	                // trransfer pic into Base64 data
 	                const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
 	                resolve(compressedBase64);
 	            };
@@ -911,7 +910,7 @@ const ProductManagement = () => {
 
 	useEffect(() => {
 		if (showAddProductDialog) {
-			setError(''); // 清空错误信息
+			setError(''); 
 		}
 		handleFetchProducts();
 	}, [showAddProductDialog]);
@@ -989,11 +988,11 @@ const ProductManagement = () => {
 								<TableCell>
 									{editProductId === product.ProductID ? (
 										<Box style={{ display: 'flex', alignItems: 'center' }}>
-											{/* 显示当前图片 */}
+											{/* pic show */}
 											
-											{/* 提供输入框修改图片路径 */}
+											{/* path*/}
 											<Box style={{ display: 'flex', alignItems: 'center' }}>
-											    {/* 显示当前图片 */}
+											    {/* show present pic */}
 											    {tempEditedProduct?.ProductImage && (
 											        <img
 											            src={tempEditedProduct.ProductImage}
@@ -1006,7 +1005,7 @@ const ProductManagement = () => {
 											            }}
 											        />
 											    )}
-											    {/* 上传按钮 */}
+											    {/* upload */}
 											    <Button
 											        variant="contained"
 											        component="label"
@@ -1078,7 +1077,7 @@ const ProductManagement = () => {
 										</Box>
 									)}
 
-									{/* 删除确认对话框 */}
+									{/* delete confirm dialog */}
 									<Dialog open={openConfirmDialog} onClose={() => setOpenConfirmDialog(false)}
 									disableEnforceFocus={false} 
 									  autoFocus={true} >
@@ -1103,10 +1102,10 @@ const ProductManagement = () => {
 									<Dialog open={showAddProductDialog}
 										onClose={() => {
 											setShowAddProductDialog(false);
-											setNewProduct({ ...defaultNewProduct }); // 重置表单数据
+											setNewProduct({ ...defaultNewProduct }); 
 										}}
-										disableEnforceFocus={false} // 确保焦点锁定在 Dialog 内部
-										  autoFocus={true} // 自动将焦点设置到 Dialog 内容中
+										disableEnforceFocus={false} 
+										  autoFocus={true} 
 									>
 										<DialogTitle>Add New Product</DialogTitle>
 										<DialogContent>
@@ -1203,10 +1202,10 @@ const ProductManagement = () => {
 			>
 				<Alert
 					onClose={() => setOpenSnackbar(false)}
-					severity={snackbarSeverity} // 根据错误或成功显示不同颜色
+					severity={snackbarSeverity} 
 					sx={{ width: '100%' }}
 				>
-					{snackbarMessage}  {/* 显示提示消息 */}
+					{snackbarMessage}  {/* notification */}
 				</Alert>
 			</Snackbar>
 		</Box>
@@ -1225,7 +1224,7 @@ const AdminDashboard = () => {
     <Box sx={{ display: "flex", height: "100vh" }}>
       <CssBaseline />
 
-      {/* 小屏幕上的 AppBar */}
+      {/* small screen AppBar */}
       {isSmallScreen && (
         <AppBar position="fixed">
           <Toolbar>
@@ -1243,7 +1242,7 @@ const AdminDashboard = () => {
         </AppBar>
       )}
 
-      {/* 响应式 Drawer */}
+      {/* reponsive Drawer */}
       <Drawer
         variant={isSmallScreen ? "temporary" : "permanent"}
         open={isSmallScreen ? drawerOpen : true}
@@ -1268,7 +1267,7 @@ const AdminDashboard = () => {
               onClick={() => {
                 setSelectedSection(item.label);
                 if (isSmallScreen) {
-                  setDrawerOpen(false); // 在小屏幕上选择后关闭 Drawer
+                  setDrawerOpen(false); // in small screen close Drawer
                 }
               }}
               selected={selectedSection === item.label}
@@ -1285,7 +1284,7 @@ const AdminDashboard = () => {
         </List>
       </Drawer>
 
-      {/* 主内容区域 */}
+      {/* main */}
       <Box
         component="main"
         sx={{

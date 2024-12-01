@@ -110,11 +110,11 @@ const fetchOrders = async () => {
   };
 
 const handleOrderClick = (orderId) => {
-  // 筛选出与点击的订单ID匹配的所有订单项
+  // filter id matched
   const orderDetails = orders.filter((order) => order.OrderID === orderId);
-  // 设置选中的订单详情
+  // detail
   setSelectedOrder(orderDetails);
-  // 打开抽屉显示订单详情
+  // show when drawer open
   setIsDrawerOpen(true);
 };
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext'; // 引入 AuthContext
+import { useAuth } from '../../context/AuthContext'; // import AuthContext
 import { useNavigate } from 'react-router-dom';
 import {
     Container,
@@ -29,29 +29,29 @@ const PaymentPage = () => {
     const location = useLocation();
     const { selectedItems } = location.state || { selectedItems: [] };
 	const { isAuthenticated, userId} = useAuth();
-    const [isDialogOpen, setIsDialogOpen] = useState(false); // 控制支付框的状态
-    const [cardDetails, setCardDetails] = useState({ number: '', expiry: '', cvv: '' }); // 存储银行卡信息
+    const [isDialogOpen, setIsDialogOpen] = useState(false); 
+    const [cardDetails, setCardDetails] = useState({ number: '', expiry: '', cvv: '' }); // store card info
 
-    // 计算价格
-    const TAX_RATE = 0.13; // 示例税率 13%
+
+    const TAX_RATE = 0.13; // demo tax rate 13%
     const subtotal = selectedItems.reduce((total, item) => total + item.ProductPrice * item.Quantity, 0);
     const tax = subtotal * TAX_RATE;
     const total = subtotal + tax;
 
-    // 打开支付对话框
+    // open payment dialog
     const handleOpenDialog = () => {
         setIsDialogOpen(true);
     };
 
-    // 关闭支付对话框
+    // close
     const handleCloseDialog = () => {
         setIsDialogOpen(false);
     };
 
-    // 处理付款逻辑
+    // logic of payment
     const handlePayment = async() => {
 		await paymentOrder(userId.userId, selectedItems.map((item) => item.CartItemID), cardDetails);
-        handleCloseDialog(); // 关闭支付框
+        handleCloseDialog(); // close
 		navigate('/');
     };
 	
@@ -64,7 +64,7 @@ const PaymentPage = () => {
             </Typography>
             <Divider sx={{ my: 2 }} />
 
-            {/* 订单详情 */}
+            {/* order detail */}
             <TableContainer component={Paper}>
                 <Table>
                     <TableHead>
@@ -90,7 +90,7 @@ const PaymentPage = () => {
                 </Table>
             </TableContainer>
 
-            {/* 总价计算 */}
+            {/* total calculated */}
             <Box sx={{ mt: 4 }}>
                 <Typography variant="h6" align="right">
                     Subtotal: ${subtotal.toFixed(2)}
@@ -103,14 +103,14 @@ const PaymentPage = () => {
                 </Typography>
             </Box>
 
-            {/* 支付按钮 */}
+            {/* button for payment */}
             <Box sx={{ mt: 4, textAlign: 'center' }}>
                 <Button variant="contained" color="primary" onClick={handleOpenDialog}>
                     Proceed to Payment
                 </Button>
             </Box>
 
-            {/* 支付对话框 */}
+            {/* payment dialog */}
             <Dialog open={isDialogOpen} onClose={handleCloseDialog}>
                 <DialogTitle>Payment</DialogTitle>
                 <DialogContent>

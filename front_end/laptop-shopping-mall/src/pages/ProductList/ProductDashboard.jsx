@@ -30,7 +30,7 @@ import { Avatar, ListItemAvatar } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext'; // 引入 AuthContext
+import { useAuth } from '../../context/AuthContext'; 
 import { fetchProducts } from '../../services/productService';
 import { addItemToCart } from '../../services/cartService';
 import { removeItemFromCart } from '../../services/cartService';
@@ -42,10 +42,10 @@ const ProductDashboard = () => {
     const [cart, setCart] = useState([]); // Predefined cart items
     const [isCartOpen, setIsCartOpen] = useState(false); // Drawer open/close state
     const navigate = useNavigate();
-    const { isAuthenticated, userId} = useAuth(); // 从 AuthContext 获取登录状态
+    const { isAuthenticated, userId} = useAuth(); // AuthContext get log in status
 
-    const [isLoading, setIsLoading] = useState(true); // 加载状态
-    const [products, setProducts] = useState([]); // 产品列表
+    const [isLoading, setIsLoading] = useState(true); // load status
+    const [products, setProducts] = useState([]); // product list
 
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedTypes, setSelectedTypes] = useState([]);
@@ -61,7 +61,7 @@ const ProductDashboard = () => {
                 setIsLoading(true);
                 // Fetch products from the server
                 const response = await axios.get('http://localhost:5005/api/product/products');
-                setProducts(response.data.products); // 设置产品数据
+                setProducts(response.data.products); // set data
             } catch (error) {
                 console.error('Failed to fetch data:', error.message);
             } finally {
@@ -72,10 +72,10 @@ const ProductDashboard = () => {
 		        try {
 		            const cartItems = await fetchCart(userId.UserId);
 		            console.log('Fetched cart items:', cartItems);
-		            setCart(Array.isArray(cartItems) ? cartItems : []); // 确保 cartItems 是数组
+		            setCart(Array.isArray(cartItems) ? cartItems : []); // make sure it is a data set
 		        } catch (error) {
 		            console.error('Failed to load cart:', error.message);
-		            setCart([]); // 遇到错误时设置为空数组
+		            setCart([]); 组
 		        } finally {
 		            setIsLoading(false);
 		        }
@@ -129,12 +129,12 @@ const ProductDashboard = () => {
 const handleremoveChange = async (product) => {
         if (!isAuthenticated) {
             console.log('User not logged in, redirecting to login page');
-            navigate('/login'); // 未登录时跳转到登录页面
+            navigate('/login'); //navigate when not log in
             return;
         }
             
         try {
-            const cartId = 101; // 示例值，根据实际需求动态设置
+            const cartId = 101; 
             const quantity = 1;
         
             await removeItemFromCart(userId.userId, cartId, product.ProductID);
@@ -149,12 +149,12 @@ const handleremoveChange = async (product) => {
     const handleAddToCart = async (product) => {
             if (!isAuthenticated) {
                 console.log('User not logged in, redirecting to login page');
-                navigate('/login'); // 未登录时跳转到登录页面
+                navigate('/login'); 
                 return;
             }
     
             try {
-                const cartId = 101; // 示例值，根据实际需求动态设置
+                const cartId = 101; 
                 const quantity = 1;
 
                 await addItemToCart(userId.userId, cartId, product.ProductID, quantity);
@@ -176,19 +176,18 @@ const handleremoveChange = async (product) => {
 	        return;
 	    }
 	
-	    // 筛选选中的商品
+	    // selected product
 	    const selectedItems = cart.filter((item) => item.checked);
 	
 	    if (selectedItems.length === 0) {
-	        // 如果没有选中商品，提示用户
+	        // notification
 	        alert('no item have been selected');
 	        return;
 	    }
-	
-	    // 在控制台打印选中的商品
+
 	    console.log('Selected Cart Items:', selectedItems);
 	
-	    // 导航到支付页面，传递选中商品数据
+	   
 	    navigate('/payment', { state: { selectedItems } });
 	};
 
@@ -275,12 +274,12 @@ const handleremoveChange = async (product) => {
                             <CardMedia
                                 component="img"
                                height="300"
-                               //objectFit= 'contain'// 保持图片比例，适应容器大小
+                               //objectFit= 'contain'
                                 image={product.ProductImage}
                                 alt={product?.ProductName}
                                 sx={{
-                                   objectFit: 'contain', // 保持图片比例，适应容器大小
-                                   flexShrink: 0, // 防止图片被压缩
+                                   objectFit: 'contain', 
+                                   flexShrink: 0, 
                                 }}
                             />
 							
@@ -399,14 +398,14 @@ const handleremoveChange = async (product) => {
             )}
             <Divider sx={{ my: 2 }} />
     
-            {/* 总价格计算 */}
+            {/* total calculate */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                 <Typography variant="subtitle1">Total:</Typography>
                 <Typography variant="subtitle1">
                     $
                     {cart
-                        .filter((item) => item.checked) // 筛选选中的商品
-                        .reduce((total, item) => total + item.ProductPrice * item.Quantity, 0) // 计算总价
+                        .filter((item) => item.checked) 
+                        .reduce((total, item) => total + item.ProductPrice * item.Quantity, 0) 
                         .toFixed(2)}
                 </Typography>
             </Box>

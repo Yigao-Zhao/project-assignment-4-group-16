@@ -1,6 +1,6 @@
 const API_BASE_URL = 'http://localhost:5005/api/cart';
 
-// 获取用户的购物车
+// get cart
 export const fetchCart = async (userId) => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -21,11 +21,11 @@ export const fetchCart = async (userId) => {
 
     const data = await response.json();
     
-        // 返回 cartItems 数组
+        // return cartItems 
         return data.cartItems || [];
 };
 
-// 添加商品到购物车
+// add product to cart
 export const addItemToCart = async (userId, cartId, productId, quantity) => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -53,7 +53,7 @@ export const addItemToCart = async (userId, cartId, productId, quantity) => {
     return await response.json();
 };
 
-// 更新购物车商品数量
+// update cart quantity
 export const updateCartItemQuantity = async (userId, cartId, productId, quantity) => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -83,7 +83,7 @@ export const updateCartItemQuantity = async (userId, cartId, productId, quantity
 };
 
 
-// 删除购物车中的商品
+// delete cart product
 export const removeItemFromCart = async (userId, cartId, productId) => {
     const token = localStorage.getItem('token');
     if (!token) {

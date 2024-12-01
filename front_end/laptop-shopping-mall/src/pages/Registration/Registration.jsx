@@ -44,9 +44,9 @@ function RegisterPage() {
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
-    const [dialogOpen, setDialogOpen] = useState(false);  // 控制弹窗显示
-    const [dialogMessage, setDialogMessage] = useState("");  // 弹窗消息
-    const [dialogSeverity, setDialogSeverity] = useState("success"); // 弹窗的类型（成功或错误）
+    const [dialogOpen, setDialogOpen] = useState(false);  
+    const [dialogMessage, setDialogMessage] = useState(""); 
+    const [dialogSeverity, setDialogSeverity] = useState("success"); 
 
     const navigate = useNavigate();
 
@@ -84,7 +84,7 @@ function RegisterPage() {
             }
         }
         if (!user.PaymentMethod) errors.PaymentMethod = "Payment method is required.";
-        // 只在 ConfirmPassword 不为空且与 MyPassword 不一致时才添加错误信息
+        // only ConfirmPassword is not empty and differs MyPassword 
         if (user.MyPassword !== user.ConfirmPassword && user.ConfirmPassword !== "") {
             errors.ConfirmPassword = "Passwords do not match.";
         }
@@ -96,7 +96,7 @@ function RegisterPage() {
     const checkEmailExists = async (email) => {
         try {
             const response = await axios.get(`http://localhost:5005/api/user/check-email?email=${email}`);
-            return response.data.exists;  // 如果邮箱存在，则返回 true
+            return response.data.exists;  // exits return true
         } catch (error) {
             console.error('Error checking email:', error);
             return false;
@@ -107,7 +107,7 @@ function RegisterPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const validationError = validateUser(formData);
-        // 输出 formData 和 validationError，检查实际的密码值
+        // formData validationError check real password
         console.log("Form Data:", formData);
         console.log("Validation Errors:", validationError);
         if (Object.keys(validationError).length > 0) {
@@ -119,7 +119,6 @@ function RegisterPage() {
         }
         const { ConfirmPassword, ...submitData } = formData;
 
-        // 检查邮箱是否唯一，只在邮箱被修改时执行
 
         const emailExists = await checkEmailExists(submitData.Email);
         if (emailExists) {
@@ -133,7 +132,7 @@ function RegisterPage() {
 
             const response = await axios.post("http://localhost:5005/api/user/users", submitData);
             if (response.data.success) {
-                // 注册成功时只显示 Dialog
+                // success,show  Dialog
                 setDialogMessage("User registered successfully!");
                 setDialogSeverity("success");
                 setDialogOpen(true);

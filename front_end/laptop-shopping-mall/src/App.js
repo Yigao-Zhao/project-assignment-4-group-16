@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { CartProvider } from "./context/CartContext"; // 引入 CartProvider
+import { CartProvider } from "./context/CartContext"; // import CartProvider
 import ProductDashboard from "./pages/ProductDashboard";
 import ProductDetail from "./pages/ProductDetail";
 

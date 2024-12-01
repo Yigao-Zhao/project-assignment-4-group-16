@@ -80,7 +80,7 @@ const Login = () => {
                     <Box
                         sx={{
                             display: 'flex',
-                            justifyContent: 'space-between', // 按钮两端对齐
+                            justifyContent: 'space-between', // space between button
                             mt: 2,
                         }}
                     >
@@ -88,7 +88,7 @@ const Login = () => {
                             type="submit"
                             variant="contained"
                             color="primary"
-                            sx={{ flex: 1, mr: 1 }} // 两个按钮等宽，右侧留间距
+                            sx={{ flex: 1, mr: 1 }} 
                         >
                             Sign In
                         </Button>
@@ -96,7 +96,7 @@ const Login = () => {
                             onClick={() => navigate('/Registration')}
                             variant="outlined"
                             color="secondary"
-                            sx={{ flex: 1 }} // 两个按钮等宽
+                            sx={{ flex: 1 }} 
                         >
                             Register
                         </Button>

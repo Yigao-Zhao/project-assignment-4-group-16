@@ -25,7 +25,7 @@ export const paymentOrder = async (userId, item, cardDetails) => {
     return await response.json();
 };
 
-// 获取用户的购物车
+// get cart
 export const fetchOrder = async (userId) => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -46,6 +46,6 @@ export const fetchOrder = async (userId) => {
 
     const data = await response.json();
     console.log(data)
-        // 返回 cartItems 数组
+        //return cartItems 
     return data.OrderItems || [];
 };
