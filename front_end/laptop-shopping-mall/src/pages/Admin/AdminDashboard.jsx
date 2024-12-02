@@ -1150,16 +1150,18 @@ const ProductManagement = () => {
 												onChange={(e) => setNewProduct({ ...newProduct, ProductSpecifications: e.target.value })}
 												margin="dense"
 											/>
-											<img
-											    src={newProduct.ProductImage}
-											    alt="Product Preview"
-											    style={{
-											        width: '80px',
-											        height: '80px',
-											        objectFit: 'cover',
-											        marginRight: '10px',
-											    }}
-											/>
+											{newProduct.ProductImage && (
+											    <img
+											        src={newProduct.ProductImage}
+											        alt="Product Preview"
+											        style={{
+											            width: '80px',
+											            height: '80px',
+											            objectFit: 'cover',
+											            marginRight: '10px',
+											        }}
+											    />
+											)}
 											<Button
 											    variant="contained"
 											    component="label"
