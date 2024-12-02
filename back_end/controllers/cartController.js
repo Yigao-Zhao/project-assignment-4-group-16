@@ -25,7 +25,7 @@ const CartController = {
         }
     },
 
-	// add item to cartde
+	// delete item to cartde
 	addItemToCartde: async (req, res) => {
 	    try {
 	        const { userId, cartId, productId, quantity } = req.body; 

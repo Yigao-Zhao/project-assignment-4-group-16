@@ -276,7 +276,7 @@ const handleOrderClick = (orderId) => {
                   {selectedOrder
                     .reduce(
                       (acc, item) =>
-                        acc + item.OrderProductQuantity * item.OrderProductSoldPrice,
+                        acc + item.Total,
                       0
                     )
                     .toFixed(2)}
@@ -291,6 +291,7 @@ const handleOrderClick = (orderId) => {
                       <TableCell>Product Name</TableCell>
                       <TableCell>Quantity</TableCell>
                       <TableCell>Price</TableCell>
+					  <TableCell>Tax</TableCell>
                       <TableCell>Total</TableCell>
                     </TableRow>
                   </TableHead>
@@ -299,11 +300,17 @@ const handleOrderClick = (orderId) => {
                       <TableRow key={item.OrderItemID}>
                         <TableCell>{item.ProductName}</TableCell>
                         <TableCell>{item.OrderProductQuantity}</TableCell>
-                        <TableCell>${item.OrderProductSoldPrice.toFixed(2)}</TableCell>
+                        <TableCell>${(item.OrderProductQuantity * item.OrderProductSoldPrice).toFixed(2)}</TableCell>
+						<TableCell>
+						  $
+						  {(
+						    item.TaxRate * item.OrderProductQuantity * item.OrderProductSoldPrice
+						  ).toFixed(2)}
+						</TableCell>
                         <TableCell>
                           $
                           {(
-                            item.OrderProductQuantity * item.OrderProductSoldPrice
+                            item.TaxRate * item.OrderProductQuantity * item.OrderProductSoldPrice + item.OrderProductQuantity * item.OrderProductSoldPrice
                           ).toFixed(2)}
                         </TableCell>
                       </TableRow>

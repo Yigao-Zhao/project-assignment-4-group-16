@@ -178,7 +178,10 @@ const UserManagement = () => {
 		}
 
 		try {
-			tempEditedUser.MyPassword = CryptoJS.SHA256(tempEditedUser.MyPassword).toString();
+			if(tempEditedUser.MyPassword.length < 60){
+				  tempEditedUser.MyPassword = CryptoJS.SHA256(tempEditedUser.MyPassword).toString();
+			}
+			
 			// BACKEND update
 			const response = await axios.put(`http://localhost:5005/api/user/users/${editUserId}`, tempEditedUser);
 			console.log(response.data.message); 
@@ -262,6 +265,7 @@ const UserManagement = () => {
 
 
 		try {
+			
 			newUser.MyPassword = CryptoJS.SHA256(newUser.MyPassword).toString();
 			const response = await axios.post('http://localhost:5005/api/user/users', newUser);
 			if (response.data.success) {
@@ -859,6 +863,16 @@ const ProductManagement = () => {
 		}
 	};
 	
+	const handleADDImageUpload = async (e) => {
+	    const file = e.target.files[0];
+	    try {
+	        const compressedBase64 = await compressImage(file, 0.2);
+			setNewProduct({ ...newProduct, ProductImage: compressedBase64 })
+			
+	    } catch (error) {
+	        console.error('Error compressing image:', error);
+	    }
+	};
 	const handleImageUpload = async (e) => {
 	    const file = e.target.files[0];
 	    try {
@@ -1136,15 +1150,30 @@ const ProductManagement = () => {
 												onChange={(e) => setNewProduct({ ...newProduct, ProductSpecifications: e.target.value })}
 												margin="dense"
 											/>
-											<TextField
-												label="Product Image"
-												fullWidth
-												value={newProduct.ProductImage}
-												onChange={(e) => setNewProduct({ ...newProduct, ProductImage: e.target.value })}
-												error={!!error?.ProductImage}
-												helperText={error?.ProductImage || ''}
-												margin="dense"
+											<img
+											    src={newProduct.ProductImage}
+											    alt="Product Preview"
+											    style={{
+											        width: '80px',
+											        height: '80px',
+											        objectFit: 'cover',
+											        marginRight: '10px',
+											    }}
 											/>
+											<Button
+											    variant="contained"
+											    component="label"
+											    size="small"
+											    sx={{ marginRight: '10px' }}
+											>
+											    Upload Image
+											    <input
+											        type="file"
+											        accept="image/*"
+											        hidden
+											        onChange={(e) => handleADDImageUpload(e)}
+											    />
+											</Button>
 											<TextField
 												label="Product Price"
 												fullWidth

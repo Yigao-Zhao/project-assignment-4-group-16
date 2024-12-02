@@ -31,7 +31,7 @@ const Order = {
 	
 	    const insertOrderQuery = `
 	        INSERT INTO \`order\` (UserID, Subtotal, TaxRate, Total, OrderStatus, PaymentMethod, OrderDate)
-	        VALUES (?, ?, ?, ?, 'Pending', ?, NOW())
+	        VALUES (?, ?, ?, ?, 'Ongoing', ?, NOW())
 	    `;
 	    const [orderResult] = await db.query(insertOrderQuery, [
 	        userId,

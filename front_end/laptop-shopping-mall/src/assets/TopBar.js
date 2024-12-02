@@ -50,7 +50,10 @@ const TopBar = () => {
                                 {userId.userName}
                             </Button>
 
-                            <Button color="inherit" onClick={logout}>
+                            <Button color="inherit" onClick={() => {
+    navigate('/');  // 执行导航
+    logout();       // 调用 logout 函数
+  }}>
                                 Logout
                             </Button>
                         </>

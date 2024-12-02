@@ -25,16 +25,7 @@ const CartService = {
             throw new Error('Failed to add item to cart');
         }
     },
-	// add item to cart
-	addItemToCart: async (userId, cartId, productId, quantity) => {
-	    try {
-	        const result = await Cart.addItem(userId, cartId, productId, quantity);
-	        return { success: true, message: 'Item added to cart successfully', cartItemId: result.insertId };
-	    } catch (err) {
-	        console.error('Error in CartService.addItemToCart:', err.message);
-	        throw new Error('Failed to add item to cart');
-	    }
-	},
+	
 
     // remove item from cart
     removeItemFromCart: async (userId, cartId, productId) => {

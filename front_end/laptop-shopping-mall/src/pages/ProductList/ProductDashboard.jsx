@@ -75,7 +75,7 @@ const ProductDashboard = () => {
 		            setCart(Array.isArray(cartItems) ? cartItems : []); // make sure it is a data set
 		        } catch (error) {
 		            console.error('Failed to load cart:', error.message);
-		            setCart([]); 组
+		            setCart([]); 
 		        } finally {
 		            setIsLoading(false);
 		        }

@@ -28,6 +28,7 @@ const PaymentPage = () => {
 	const navigate = useNavigate();
     const location = useLocation();
     const { selectedItems } = location.state || { selectedItems: [] };
+	// eslint-disable-next-line
 	const { isAuthenticated, userId} = useAuth();
     const [isDialogOpen, setIsDialogOpen] = useState(false); 
     const [cardDetails, setCardDetails] = useState({ number: '', expiry: '', cvv: '' }); // store card info

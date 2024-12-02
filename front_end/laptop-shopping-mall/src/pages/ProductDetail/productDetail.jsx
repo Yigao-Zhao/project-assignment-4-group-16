@@ -1,21 +1,43 @@
-import React, { useState } from "react";
+/* eslint-disable no-unused-vars */
+/* eslint-disable */
+import React, { useState, useEffect } from "react";
 import {
+  Container,
   Box,
   Typography,
   Grid,
   Card,
   CardContent,
   CardMedia,
+  CardActions,
   Button,
+  Fab,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  Checkbox,
+  IconButton,
   TextField,
-  Snackbar,
-  Alert,
+  Slider,
+  FormControlLabel,
+  FormGroup,
+  
 } from "@mui/material";
 import { useLocation } from "react-router-dom";
 import { useAuth } from '../../context/AuthContext'; 
 import { useNavigate } from 'react-router-dom';
 import { addItemToCart } from '../../services/cartService';
+import { fetchCart } from '../../services/cartService'; 
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { Avatar, ListItemAvatar } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
+import { removeItemFromCart } from '../../services/cartService';
+
 const ProductDetail = () => {
+	
 	const { isAuthenticated, userId} = useAuth();
 	const navigate = useNavigate();
   const location = useLocation();
@@ -30,7 +52,60 @@ const ProductDetail = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false); 
   const [snackbarMessage, setSnackbarMessage] = useState(""); 
   const [snackbarSeverity, setSnackbarSeverity] = useState("success"); 
+  const [cart, setCart] = useState([]); // Predefined cart items
+  const [isCartOpen, setIsCartOpen] = useState(false); // Drawer open/close state
+  const [isLoading, setIsLoading] = useState(true); // load status
 
+// Toggle cart drawer
+    const toggleCart = async (open) => {
+		if (!isAuthenticated) {
+			navigate('/login');
+			return;
+		}
+		const cartItems = await fetchCart(userId.userId);
+		console.log('Fetched cart items:', cartItems);
+		setCart(Array.isArray(cartItems) ? cartItems : []);
+        setIsCartOpen(open);
+    };
+const handleCheckout = () => {
+	    if (!isAuthenticated) {
+	        navigate('/login');
+	        return;
+	    }
+	
+	    // selected product
+	    const selectedItems = cart.filter((item) => item.checked);
+	
+	    if (selectedItems.length === 0) {
+	        // notification
+	        alert('no item have been selected');
+	        return;
+	    }
+
+	    console.log('Selected Cart Items:', selectedItems);
+	
+	   
+	    navigate('/payment', { state: { selectedItems } });
+	};
+const handleremoveChange = async (product) => {
+        if (!isAuthenticated) {
+            console.log('User not logged in, redirecting to login page');
+            navigate('/login'); //navigate when not log in
+            return;
+        }
+            
+        try {
+            const cartId = 101; 
+            const quantity = 1;
+        
+            await removeItemFromCart(userId.userId, cartId, product.ProductID);
+        	const cartItems = await fetchCart(userId.userId);
+        	console.log('Fetched cart items:', cartItems);
+        	setCart(Array.isArray(cartItems) ? cartItems : []);
+        } catch (error) {
+            console.error('Failed to add product to cart:', error.message);
+        }
+    };
 	const handleAddToCart = async (product) => {
 		if (!isAuthenticated) {
 			console.log('User not logged in, redirecting to login page');
@@ -63,6 +138,26 @@ const ProductDetail = () => {
     setSnackbarSeverity("success");
     setOpenSnackbar(true);
   };
+  useEffect(() => {
+  	const loadCart = async () => {
+  	        try {
+				
+  	            const cartItems = await fetchCart(userId.UserId);
+  	            console.log('Fetched cart items:', cartItems);
+  	            setCart(Array.isArray(cartItems) ? cartItems : []); // make sure it is a data set
+				console.log(cartItems)
+  	        } catch (error) {
+  	            console.error('Failed to load cart:', error.message);
+  	            setCart([]); 
+  	        } finally {
+				setIsLoading(false);
+  	        }
+  	    };
+  	// eslint-disable-next-line
+  	    if (isAuthenticated && userId) {
+  	        loadCart();
+  	    }
+  }, []);
 
   if (!product) {
  
@@ -135,62 +230,113 @@ const ProductDetail = () => {
           </Card>
         </Grid>
       </Grid>
-
-      {/* review */}
-      <Box sx={{ mt: 5 }}>
-        <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2 }}>
-          Reviews
-        </Typography>
-        {reviews.length > 0 ? (
-          reviews.map((review, index) => (
-            <Card key={index} sx={{ mb: 2, p: 2 }}>
-              <Typography>
-                <strong>Rating:</strong> {review.rating} / 5
-              </Typography>
-              <Typography>{review.text}</Typography>
-            </Card>
-          ))
-        ) : (
-          <Typography>No reviews yet.</Typography>
-        )}
-
-        {/* submit */}
-        <Card sx={{ mt: 4, p: 3 }}>
-          <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-            Add Your Review
-          </Typography>
-          <TextField
-            label="Your Review"
-            value={newReview}
-            onChange={(e) => setNewReview(e.target.value)}
-            fullWidth
-            multiline
-            rows={3}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            label="Your Rating (1-5)"
-            type="number"
-            value={rating}
-            onChange={(e) => setRating(Number(e.target.value))}
-            fullWidth
-            inputProps={{ min: 1, max: 5 }}
-            sx={{ mb: 2 }}
-          />
-          <Button variant="contained" onClick={handleSubmitReview}>
-            Submit Review
-          </Button>
-        </Card>
-      </Box>
-
-      {/* notification */}
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={3000}
-        onClose={() => setOpenSnackbar(false)}
-      >
-        <Alert severity={snackbarSeverity}>{snackbarMessage}</Alert>
-      </Snackbar>
+	{/* Floating Cart Button */ }
+	<Fab
+	    color="primary"
+	    aria-label="cart"
+	    sx={{ position: 'fixed', bottom: 16, right: 16 }}
+	    onClick={() => toggleCart(true)}
+	>
+	    <ShoppingCartIcon />
+	</Fab>
+	
+	{/* Cart Drawer */ }
+	<Drawer anchor="right" open={isCartOpen} onClose={() => toggleCart(false)}>
+	    <Box sx={{ width: 300, p: 2 }}>
+	        <Typography variant="h6" component="h2" gutterBottom>
+	            Shopping Cart
+	        </Typography>
+	        <Divider />
+	        {isLoading ? (
+	            <Typography sx={{ mt: 2 }} align="center">
+	                Loading...
+	            </Typography>
+	        ) : cart.length === 0 ? (
+	            <Typography sx={{ mt: 2 }} align="center">
+	                Your cart is empty.
+	            </Typography>
+	        ) : (
+	            <List>
+	                {cart.map((item) => (
+	                    <ListItem
+	                        key={`${item.CartItemID}-${Math.random()}`}
+	                        secondaryAction={
+	                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+	                                <IconButton
+	                                    edge="end"
+	                                    onClick={() => handleremoveChange(item)}
+	                                >
+	                                    <RemoveIcon />
+	                                </IconButton>
+	                                <Typography
+	                                    variant="body1"
+	                                    sx={{ mx: 1, minWidth: '20px', textAlign: 'center' }}
+	                                >
+	                                    {item.Quantity}
+	                                </Typography>
+	                                <IconButton
+	                                    edge="end"
+	                                    onClick={() => handleAddToCart(item)}
+	                                >
+	                                    <AddIcon />
+	                                </IconButton>
+	                            </Box>
+	                        }
+	                    >
+	                        <ListItemAvatar>
+	                            <Avatar
+	                                src={item.ProductImage}
+	                                alt={item.ProductName}
+	                                sx={{ width: 56, height: 56 }}
+	                            />
+								
+	                        </ListItemAvatar>
+	                        <Checkbox
+	                            checked={item.checked || false}
+	                            onChange={() => {
+	                                setCart((prevCart) =>
+	                                    prevCart.map((cartItem) =>
+	                                        cartItem.CartItemID === item.CartItemID
+	                                            ? { ...cartItem, checked: !cartItem.checked }
+	                                            : cartItem
+	                                    )
+	                                );
+	                            }}
+	                        />
+	                        <ListItemText
+	                            primary={item.ProductName}
+	                            secondary={`Price: $${item.ProductPrice.toFixed(2)}`}
+	                        />
+	                    </ListItem>
+	                ))}
+	            </List>
+	        )}
+	        <Divider sx={{ my: 2 }} />
+	
+	        {/* total calculate */}
+	        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+	            <Typography variant="subtitle1">Total:</Typography>
+	            <Typography variant="subtitle1">
+	                $
+	                {cart
+	                    .filter((item) => item.checked) 
+	                    .reduce((total, item) => total + item.ProductPrice * item.Quantity, 0) 
+	                    .toFixed(2)}
+	            </Typography>
+	        </Box>
+	
+	        <Button
+	            variant="contained"
+	            color="success"
+	            fullWidth
+	            onClick={handleCheckout}
+	            disabled={cart.length === 0}
+	        >
+	            Checkout
+	        </Button>
+	    </Box>
+	</Drawer>
+      
     </Box>
   );
 };

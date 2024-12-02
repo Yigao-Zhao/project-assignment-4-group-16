@@ -8,8 +8,8 @@ const OrderController = {
 	        const result = await OrderService.getOrderByUserId(userId);
 	        res.status(200).json(result); // return order information
 	    } catch (err) {
-	        console.error('Error in CartController.getCartByUserId:', err.message);
-	        res.status(500).json({ success: false, message: 'Failed to retrieve cart', error: err.message });
+	        console.error('Error in OrderController.getOrderByUserId:', err.message);
+	        res.status(500).json({ success: false, message: 'Failed to retrieve Order', error: err.message });
 	    }
 	},
     addOrder: async (req, res) => {
@@ -19,8 +19,8 @@ const OrderController = {
             const result = await OrderService.paymentOrder(userId, item, cardDetails);
             res.status(201).json(result); // return success message
         } catch (err) {
-            console.error('Error in CartController.addItemToCart:', err.message);
-            res.status(500).json({ success: false, message: 'Failed to add item to cart', error: err.message });
+            console.error('Error in OrderController.addItemToOrder:', err.message);
+            res.status(500).json({ success: false, message: 'Failed to add item to Order', error: err.message });
         }
     }
 

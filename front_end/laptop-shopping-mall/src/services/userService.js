@@ -48,7 +48,10 @@ export const updateUserInfo = async (user) => {
     throw new Error('No token found. Please log in.');
   }
   var userId = user.UserID
-	user.MyPassword = CryptoJS.SHA256(user.MyPassword).toString();
+  console.log("length is "+ user.MyPassword.length)
+  if(user.MyPassword.length < 60){
+	  user.MyPassword = CryptoJS.SHA256(user.MyPassword).toString();
+  }
   const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
     method: 'PUT', // Use PUT or PATCH depending on your API specification
     headers: {
