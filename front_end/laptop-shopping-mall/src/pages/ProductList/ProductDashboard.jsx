@@ -293,22 +293,26 @@ const handleremoveChange = async (product) => {
                             </Typography>
                         </CardContent>
                         <CardActions>
-                            <Button
-                                size="small"
-                                variant="contained"
-                                color="primary"
-                                onClick={() => handleViewDetails(product)}
-                            >
-                                View Details
-                            </Button>
-                            <Button
-                                size="small"
-                                variant="outlined"
-                                color="secondary"
-                                onClick={() => handleAddToCart(product)}
-                            >
-                                Add to Cart
-                            </Button>
+                            {product.ProductStock !== 0 ? (
+                                <>
+                                    <Button
+                                        size="small"
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => handleViewDetails(product)}
+                                    >
+                                        View Details
+                                    </Button>
+                                    <Button
+                                        size="small"
+                                        variant="outlined"
+                                        color="secondary"
+                                        onClick={() => handleAddToCart(product)}
+                                    >
+                                        Add to Cart
+                                    </Button>
+                                </>
+                            ) : <h3> NO STOCK</h3>}
                         </CardActions>
                     </Card>
                     </Grid>

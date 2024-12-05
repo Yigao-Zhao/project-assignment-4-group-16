@@ -208,7 +208,7 @@ const UserManagement = () => {
 		}
 	};
 
-	const handleConfirmDelete = (userId) => {
+	const handleConfirmDeleteUser = (userId) => {
 		setUserToDelete(userId); // set userID ready to delete
 		setOpenConfirmDialog(true); 
 	};
@@ -216,11 +216,11 @@ const UserManagement = () => {
 
 	const handleDeleteUser = async (id) => {
 		try {
-			console.log('Deleting user with ID:', id);
-			const response = await axios.delete(`http://localhost:5005/api/user/users/${id}`);
+			const response = await axios.delete(`http://localhost:5005/api/user/users/${userToDelete}`);
 			console.log('Response from deleteUser:', response.data);
 			if (response.data.success) {
-				setUsers((prev) => prev.filter((user) => user.UserID !== id));
+				handleFetchUsers();
+				// setUsers((prev) => prev.filter((user) => user.UserID !== id));
 				setOpenConfirmDialog(false); 
 				setSnackbarMessage('User deleted successfully!');
 				setSnackbarSeverity('success');
@@ -473,7 +473,7 @@ const UserManagement = () => {
 											}}>
 												<Edit />
 											</IconButton>
-											<IconButton onClick={() => handleConfirmDelete(user.UserID)}>
+											<IconButton onClick={() => handleConfirmDeleteUser(user.UserID)}>
 												<Delete />
 											</IconButton>
 										</Box>
